@@ -3,613 +3,200 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kocia Straż — Pomoc i Ratunek Bezdomnym Kotom</title>
+    <title>Kocia Straż — Zgłoś kota</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,500&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --ink:        #1c2430;
-            --ink-soft:   #5b6472;
-            --paper:      #f7f3ea;
-            --card:       #ffffff;
-            --amber:      #e8a33d;
-            --amber-dark: #c9832a;
-            --rust:       #c1622d;
-            --teal:       #35636a;
-            --line:       #e5ddc9;
-            --mono:       'IBM Plex Mono', 'Courier New', monospace;
-            --serif:      'Fraunces', Georgia, serif;
-            --sans:       'Inter', 'Segoe UI', Tahoma, sans-serif;
+            --ink: #1c2430;
+            --paper: #f7f3ea;
+            --amber: #e8a33d;
+            --card: #ffffff;
+            --sans: 'Inter', sans-serif;
+            --serif: 'Fraunces', Georgia, serif;
         }
 
         * { box-sizing: border-box; }
-        html { scroll-behavior: smooth; }
 
         body {
             font-family: var(--sans);
-            background-color: var(--paper);
+            background: var(--paper);
             color: var(--ink);
             margin: 0;
-            padding: 0;
-            -webkit-font-smoothing: antialiased;
-        }
-
-        a { color: var(--teal); }
-
-        .pasek-gorny {
-            position: relative;
-            z-index: 2;
+            padding: 1.5rem;
+            min-height: 100vh;
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            padding: 1.25rem 1.75rem;
-            max-width: 1040px;
-            margin: 0 auto;
-        }
-
-        .marka {
-            display: flex;
-            align-items: center;
-            gap: 0.6rem;
-            color: #f4efe4;
-            font-family: var(--serif);
-            font-weight: 600;
-            font-size: 1.05rem;
-            letter-spacing: -0.01em;
-        }
-
-        .marka svg { width: 30px; height: 30px; flex-shrink: 0; }
-
-        .plakietka-npo {
-            font-family: var(--mono);
-            font-size: 0.68rem;
-            letter-spacing: 0.14em;
-            text-transform: uppercase;
-            color: #1c2430;
-            background: var(--amber);
-            padding: 0.35rem 0.7rem;
-            border-radius: 100px;
-            font-weight: 500;
-        }
-
-        .hero {
-            position: relative;
-            overflow: hidden;
-            min-height: 78vh;
-            display: flex;
-            flex-direction: column;
-            background-color: #10161f;
-        }
-
-        .hero-tlo {
-            position: absolute;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            opacity: 0.55;
-            filter: saturate(0.85) brightness(0.8);
-        }
-
-        .hero::before {
-            content: "";
-            position: absolute;
-            inset: 0;
-            background:
-                radial-gradient(ellipse 70% 55% at 50% 8%, rgba(232,163,61,0.4), transparent 60%),
-                linear-gradient(180deg, rgba(16,22,31,0.55) 0%, rgba(16,22,31,0.35) 40%, rgba(16,22,31,0.96) 100%);
-        }
-
-        .hero::after {
-            content: "";
-            position: absolute;
-            inset: 0;
-            opacity: 0.05;
-            background-image:
-                radial-gradient(circle at 20% 30%, #fff 2px, transparent 2.5px),
-                radial-gradient(circle at 25% 25%, #fff 1.5px, transparent 2px),
-                radial-gradient(circle at 78% 62%, #fff 2px, transparent 2.5px),
-                radial-gradient(circle at 83% 57%, #fff 1.5px, transparent 2px),
-                radial-gradient(circle at 55% 85%, #fff 2px, transparent 2.5px);
-            background-size: 320px 320px;
-        }
-
-        .hero-tresc {
-            position: relative;
-            z-index: 2;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
             justify-content: center;
-            align-items: center;
-            text-align: center;
-            padding: 2rem 1.5rem 3.5rem;
-            max-width: 760px;
-            margin: 0 auto;
-            animation: wschodzi 0.7s ease-out;
         }
 
-        @keyframes wschodzi {
-            from { opacity: 0; transform: translateY(10px); }
-            to   { opacity: 1; transform: translateY(0); }
-        }
-
-        .hero-tresc .eyebrow {
-            font-family: var(--mono);
-            font-size: 0.75rem;
-            letter-spacing: 0.24em;
-            text-transform: uppercase;
-            color: var(--amber);
-            margin-bottom: 1.1rem;
-        }
-
-        .hero-tresc h1 {
-            margin: 0;
-            font-family: var(--serif);
-            font-weight: 700;
-            color: #f7f3ea;
-            font-size: clamp(2.4rem, 6vw, 3.6rem);
-            letter-spacing: -0.015em;
-            line-height: 1.05;
-        }
-
-        .hero-tresc p {
-            font-family: var(--serif);
-            font-style: italic;
-            font-weight: 500;
-            font-size: 1.2rem;
-            max-width: 32rem;
-            margin: 1.1rem auto 1.8rem;
-            color: #d8cdb8;
-            line-height: 1.55;
-        }
-
-        .hero-cta {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            background: var(--amber);
-            color: #1c2430;
-            font-weight: 700;
-            font-size: 0.95rem;
-            padding: 0.85rem 1.6rem;
-            border-radius: 100px;
-            text-decoration: none;
-            box-shadow: 0 8px 24px -8px rgba(232,163,61,0.55);
-            transition: transform 0.15s ease, box-shadow 0.15s ease;
-        }
-
-        .hero-cta:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 12px 28px -8px rgba(232,163,61,0.65);
-        }
-
-        .kroki {
-            position: relative;
-            z-index: 2;
-            max-width: 1040px;
-            margin: -3.75rem auto 0;
-            padding: 0 1.5rem;
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 1rem;
-        }
-
-        .krok {
+        .kontener {
             background: var(--card);
-            border: 1px solid var(--line);
-            border-radius: 14px;
-            padding: 1.5rem 1.4rem;
-            box-shadow: 0 14px 34px -18px rgba(28,36,48,0.35);
-        }
-
-        .krok .nr {
-            font-family: var(--mono);
-            font-size: 0.75rem;
-            color: var(--rust);
-            letter-spacing: 0.1em;
-        }
-
-        .krok h3 {
-            font-family: var(--serif);
-            font-size: 1.08rem;
-            font-weight: 600;
-            margin: 0.4rem 0 0.35rem;
-            color: var(--ink);
-        }
-
-        .krok p {
-            margin: 0;
-            font-size: 0.88rem;
-            color: var(--ink-soft);
-            line-height: 1.5;
-        }
-
-        main {
-            max-width: 800px;
-            margin: 4.5rem auto 4rem;
-            padding: 0 1.25rem;
-        }
-
-        .sekcja-naglowek {
-            display: flex;
-            align-items: baseline;
-            gap: 0.75rem;
-            margin-bottom: 1rem;
-        }
-
-        .sekcja-naglowek .znacznik {
-            font-family: var(--mono);
-            font-size: 0.75rem;
-            letter-spacing: 0.14em;
-            text-transform: uppercase;
-            color: var(--rust);
-            white-space: nowrap;
-        }
-
-        .sekcja-naglowek .kreska {
-            flex: 1;
-            height: 1px;
-            background: var(--line);
-        }
-
-        .karta {
-            background: var(--card);
-            padding: 2.25rem;
-            border-radius: 14px;
-            border: 1px solid var(--line);
-            box-shadow: 0 2px 10px rgba(28,36,48,0.04);
-            margin-bottom: 2.5rem;
-        }
-
-        h2 {
-            font-family: var(--serif);
-            font-weight: 600;
-            color: var(--ink);
-            margin-top: 0;
-            font-size: 1.55rem;
-            letter-spacing: -0.01em;
-        }
-
-        .karta > p {
-            color: var(--ink-soft);
-            line-height: 1.6;
-            font-size: 0.97rem;
-        }
-
-        form label {
-            display: flex;
-            align-items: center;
-            gap: 0.4rem;
-            margin-bottom: 0.45rem;
-            font-weight: 600;
-            font-size: 0.9rem;
-            color: var(--ink);
-        }
-
-        form label svg { width: 16px; height: 16px; color: var(--rust); flex-shrink: 0; }
-
-        form input[type="file"],
-        form textarea {
+            border: 2px solid var(--ink);
+            border-radius: 16px;
+            padding: 2rem;
+            max-width: 440px;
             width: 100%;
-            padding: 0.85rem;
-            margin-bottom: 1.4rem;
-            border: 1.5px dashed #d6cdb4;
+            box-shadow: 6px 6px 0px var(--ink);
+        }
+
+        h1 {
+            font-family: var(--serif);
+            margin: 0 0 0.5rem;
+            font-size: 1.8rem;
+        }
+
+        p.opis-strony {
+            color: #5b6472;
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .pole {
+            margin-bottom: 1.2rem;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.4rem;
+            font-size: 0.9rem;
+        }
+
+        textarea, input[type="file"] {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid var(--ink);
             border-radius: 8px;
-            box-sizing: border-box;
             font-family: var(--sans);
             font-size: 0.95rem;
-            background: #fdfbf6;
-            color: var(--ink);
-            transition: border-color 0.15s ease;
+            background: #fff;
         }
 
-        form input[type="file"]:focus,
-        form textarea:focus {
-            outline: none;
-            border-color: var(--teal);
-            border-style: solid;
-        }
-
-        form textarea {
-            border-style: solid;
+        textarea {
             resize: vertical;
-            height: 100px;
-            line-height: 1.5;
+            min-height: 90px;
         }
 
         button {
-            background-color: var(--ink);
-            color: #f4efe4;
-            border: none;
-            padding: 0.9rem 1.5rem;
-            font-family: var(--sans);
-            font-size: 0.95rem;
-            font-weight: 600;
-            letter-spacing: 0.01em;
+            width: 100%;
+            background: var(--amber);
+            color: var(--ink);
+            border: 2px solid var(--ink);
+            padding: 0.9rem;
+            font-weight: 700;
+            font-size: 1rem;
             border-radius: 8px;
             cursor: pointer;
-            transition: background 0.18s ease, transform 0.08s ease;
-            width: 100%;
+            box-shadow: 3px 3px 0px var(--ink);
+            transition: transform 0.1s, box-shadow 0.1s;
         }
 
-        button:hover { background-color: var(--teal); }
-        button:active { transform: translateY(1px); }
+        button:active {
+            transform: translate(2px, 2px);
+            box-shadow: 1px 1px 0px var(--ink);
+        }
 
-        #komunikat {
-            display: none;
-            padding: 1rem 1.1rem;
-            border-radius: 8px;
-            margin-bottom: 1.5rem;
+        #status {
+            margin-top: 1rem;
             font-weight: 600;
-            font-size: 0.92rem;
+            font-size: 0.9rem;
             text-align: center;
-        }
-
-        .sukces {
-            background-color: #e4f0e6;
-            color: #2f6b3a;
-            border: 1px solid #c3ddc7;
-        }
-
-        .lista-zgloszen { display: grid; gap: 0.9rem; }
-
-        .zgloszenie-item {
-            position: relative;
-            background: #fdfbf6;
-            border: 1px solid var(--line);
-            border-left: 4px solid var(--amber);
-            padding: 1.1rem 1.25rem;
-            border-radius: 8px;
-            font-size: 0.95rem;
-            line-height: 1.55;
-            transition: border-color 0.15s ease;
-        }
-
-        .zgloszenie-item:hover { border-left-color: var(--rust); }
-        .zgloszenie-item strong { font-family: var(--sans); color: var(--ink); }
-
-        .lokalizacja-info {
-            font-family: var(--mono);
-            font-size: 0.85rem;
-            color: var(--teal);
-            background: #eaf1f1;
-            padding: 0.15rem 0.45rem;
-            border-radius: 4px;
-            display: inline-block;
-            margin-top: 0.15rem;
-        }
-
-        footer {
-            border-top: 1px solid var(--line);
-            text-align: center;
-            padding: 2.25rem 1.25rem 2.75rem;
-        }
-
-        footer .stopka-marka {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            font-family: var(--serif);
-            font-weight: 600;
-            color: var(--ink);
-            margin-bottom: 0.35rem;
-        }
-
-        footer .stopka-marka svg { width: 20px; height: 20px; }
-
-        footer small {
-            display: block;
-            font-family: var(--mono);
-            font-size: 0.72rem;
-            letter-spacing: 0.04em;
-            color: var(--ink-soft);
-        }
-
-        footer .link-admina {
-            display: inline-block;
-            margin-top: 0.9rem;
-            font-family: var(--mono);
-            font-size: 0.7rem;
-            letter-spacing: 0.06em;
-            color: var(--ink-soft);
-            text-decoration: none;
-            border-bottom: 1px dotted var(--line);
-        }
-
-        footer .link-admina:hover { color: var(--teal); }
-
-        @media (max-width: 720px) {
-            .kroki { grid-template-columns: 1fr; margin-top: -2.5rem; }
-        }
-
-        @media (max-width: 520px) {
-            .karta { padding: 1.5rem; }
-            .hero { min-height: 66vh; }
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-            html { scroll-behavior: auto; }
-            .hero-tresc { animation: none; }
         }
     </style>
 </head>
 <body>
 
-    <div class="hero">
-        <img class="hero-tlo" src="https://cataas.com/cat?width=1600&height=1200&position=center" alt="" loading="eager">
+    <div class="kontener">
+        <h1>🐾 Kocia Straż</h1>
+        <p class="opis-strony">Zrób zdjęcie znalezionemu kotu i prześlij zgłoszenie.</p>
 
-        <div class="pasek-gorny">
-            <div class="marka">
-                <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M32 4 L56 14 V30 C56 45 46 55 32 60 C18 55 8 45 8 30 V14 Z" fill="#e8a33d" opacity="0.18" stroke="#e8a33d" stroke-width="1.5"/>
-                    <path d="M24 26 C24 22 20 20 19 17 C22 17 25 19 26.5 21.5 C28 21 30 21 32 21 C34 21 36 21 37.5 21.5 C39 19 42 17 45 17 C44 20 40 22 40 26 C40 33 36.5 38 32 38 C27.5 38 24 33 24 26 Z" fill="#f4efe4"/>
-                    <circle cx="28.5" cy="27" r="1.6" fill="#1c2430"/>
-                    <circle cx="35.5" cy="27" r="1.6" fill="#1c2430"/>
-                    <path d="M31 30 L33 30 L32 31.5 Z" fill="#1c2430"/>
-                </svg>
-                Kocia Straż
+        <form id="formularz-zgloszenia">
+            <div class="pole">
+                <label for="zdjecieKotka">Zdjęcie kota</label>
+                <input type="file" id="zdjecieKotka" accept="image/*" capture="environment" required>
             </div>
-            <span class="plakietka-npo">Fundacja non-profit</span>
-        </div>
 
-        <div class="hero-tresc">
-            <span class="eyebrow">Patrol miejski · od zmierzchu do świtu</span>
-            <h1>Czuwamy nad bezdomnymi kotami</h1>
-            <p>Zgłoś kota w potrzebie, a nasz patrol wyruszy z pomocą — najczęściej jeszcze tego samego dnia.</p>
-            <a href="#zglos" class="hero-cta">🐾 Zgłoś kotka teraz</a>
-        </div>
-    </div>
-
-    <div class="kroki">
-        <div class="krok">
-            <span class="nr">01</span>
-            <h3>Zrób zdjęcie</h3>
-            <p>Sfotografuj kotka telefonem z włączoną lokalizacją — reszta dzieje się automatycznie.</p>
-        </div>
-        <div class="krok">
-            <span class="nr">02</span>
-            <h3>Wyślij zgłoszenie</h3>
-            <p>System odczytuje współrzędne GPS ze zdjęcia i dodaje wpis do dziennika patrolu.</p>
-        </div>
-        <div class="krok">
-            <span class="nr">03</span>
-            <h3>Patrol wyrusza</h3>
-            <p>Nasz zespół dociera na miejsce i obejmuje kotka opieką lub potrzebną pomocą.</p>
-        </div>
-    </div>
-
-    <main>
-        <div class="sekcja-naglowek" id="zglos">
-            <span class="znacznik">Zgłoszenie</span>
-            <span class="kreska"></span>
-        </div>
-        <div class="karta">
-            <h2>Zgłoś potrzebującego kotka</h2>
-            <p>Znalazłeś bezdomnego lub potrzebującego pomocy kota? Zrób mu zdjęcie (z włączoną lokalizacją w telefonie/aparacie) i prześlij je nam. System automatycznie odczyta współrzędne geograficzne!</p>
-
-            <div id="komunikat"></div>
-
-            <form id="formularzZgloszenia">
-                <label for="zdjecieKotka">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="6" width="18" height="14" rx="2"/><circle cx="12" cy="13" r="3.5"/><path d="M8 6l1.5-2h5L16 6"/></svg>
-                    Zdjęcie kotka (wraz z danymi GPS):
-                </label>
-                <input type="file" id="zdjecieKotka" name="zdjecieKotka" accept="image/*" required>
-
-                <label for="opis">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19V6a2 2 0 0 1 2-2h9l5 5v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z"/><path d="M14 4v5h5"/></svg>
-                    Opis sytuacji / Stan kotka:
-                </label>
-                <textarea id="opis" name="opis" placeholder="Np. Czarny kotek błąka się w okolicach parku, kuleje na jedną łapkę..."></textarea>
-
-                <button type="submit">Wyślij zgłoszenie do patrolu</button>
-            </form>
-        </div>
-
-        <div class="sekcja-naglowek">
-            <span class="znacznik">Dziennik patrolu</span>
-            <span class="kreska"></span>
-        </div>
-        <div class="karta">
-            <h2>Ostatnie zgłoszenia w systemie</h2>
-            <div id="kontenerZgloszen" class="lista-zgloszen">
-                <p>Ładowanie zgłoszeń...</p>
+            <div class="pole">
+                <label for="opis">Opis zgłoszenia</label>
+                <textarea id="opis" placeholder="Opisz stan kota, znak szczególny lub dokładne miejsce..."></textarea>
             </div>
-        </div>
-    </main>
 
-    <footer>
-        <div class="stopka-marka">
-            <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M32 4 L56 14 V30 C56 45 46 55 32 60 C18 55 8 45 8 30 V14 Z" fill="#e8a33d" opacity="0.18" stroke="#c9832a" stroke-width="1.5"/>
-                <path d="M24 26 C24 22 20 20 19 17 C22 17 25 19 26.5 21.5 C28 21 30 21 32 21 C34 21 36 21 37.5 21.5 C39 19 42 17 45 17 C44 20 40 22 40 26 C40 33 36.5 38 32 38 C27.5 38 24 33 24 26 Z" fill="#1c2430"/>
-            </svg>
-            Kocia Straż
-        </div>
-        <small>Działamy non-profit, w dzień i w nocy 🐾</small>
-        <a href="/admin.html" class="link-admina">Panel administratora →</a>
-    </footer>
+            <button type="submit" id="btn-wyslij">Wyoślij zgłoszenie</button>
+        </form>
+
+        <div id="status"></div>
+    </div>
 
     <script>
-        const formularz = document.getElementById('formularzZgloszenia');
-        const komunikatDiv = document.getElementById('komunikat');
-        const kontenerZgloszen = document.getElementById('kontenerZgloszen');
+        const formularz = document.getElementById('formularz-zgloszenia');
+        const statusDiv = document.getElementById('status');
+        const btnWyslij = document.getElementById('btn-wyslij');
 
-        // Funkcja pobierająca i wyświetlająca zgłoszenia z serwera
-        async function pobierzZgloszenia() {
-            try {
-                const odpowiedz = await fetch('/api/zgloszenia');
-                const zgloszenia = await odpowiedz.json();
-
-                if (zgloszenia.length === 0) {
-                    kontenerZgloszen.innerHTML = '<p>Brak zgłoszeń w bazie. Bądź pierwszy i pomóż kotkowi!</p>';
-                    return;
-                }
-
-                kontenerZgloszen.innerHTML = '';
-                zgloszenia.forEach(z => {
-                    const div = document.createElement('div');
-                    div.className = 'zgloszenie-item';
-
-                    let gpsTekst = '<span style="color: grey;">Brak danych GPS w metadanych zdjęcia</span>';
-                    if (z.szerokosc && z.dlugosc) {
-                        gpsTekst = `<span class="lokalizacja-info">Szerokość: ${z.szerokosc.toFixed(4)}, Długość: ${z.dlugosc.toFixed(4)}</span>`;
-                    }
-
-                    div.innerHTML = `
-                        <strong>Opis:</strong> ${z.opis} <br>
-                        <strong>Lokalizacja z EXIF:</strong> ${gpsTekst} <br>
-                        <small style="color: #718093;">Dodano: ${z.data}</small>
-                    `;
-                    kontenerZgloszen.appendChild(div);
-                });
-            } catch (err) {
-                kontenerZgloszen.innerHTML = '<p>Nie udało się pobrać listy zgłoszeń.</p>';
-            }
-        }
-
-        // Obsługa wysyłania formularza
         formularz.addEventListener('submit', async (e) => {
             e.preventDefault();
 
-            komunikatDiv.style.display = 'block';
-            komunikatDiv.className = '';
-            komunikatDiv.style.background = '#e2e8f0';
-            komunikatDiv.style.color = '#2d3436';
-            komunikatDiv.textContent = 'Przesyłanie zdjęcia i automatyczna analiza metadanych EXIF... Proszę czekać.';
+            const opisInput = document.getElementById('opis');
+            const zdjecieInput = document.getElementById('zdjecieKotka');
+            const plik = zdjecieInput.files[0];
 
-            const formData = new FormData(formularz);
+            if (!plik) {
+                alert('Proszę zrobić lub wybrać zdjęcie!');
+                return;
+            }
+
+            btnWyslij.disabled = true;
+            statusDiv.style.color = '#35636a';
+            statusDiv.textContent = 'Pobieranie lokalizacji GPS...';
+
+            const formData = new FormData();
+            formData.append('opis', opisInput.value);
+            formData.append('zdjecieKotka', plik);
+
+            // Pobieramy geolokalizację z przeglądarki
+            if ('geolocation' in navigator) {
+                try {
+                    const pozycja = await new Promise((resolve, reject) => {
+                        navigator.geolocation.getCurrentPosition(resolve, reject, {
+                            enableHighAccuracy: true,
+                            timeout: 10000,
+                            maximumAge: 0
+                        });
+                    });
+
+                    formData.append('szerokosc', pozycja.coords.latitude);
+                    formData.append('dlugosc', pozycja.coords.longitude);
+                } catch (err) {
+                    console.warn('GPS niedostępny lub odrzucony:', err.message);
+                }
+            }
+
+            statusDiv.textContent = 'Wysyłanie zgłoszenia...';
 
             try {
-                const odpowiedz = await fetch('/api/zgloszenie', {
+                const odp = await fetch('/api/zgloszenie', {
                     method: 'POST',
                     body: formData
                 });
 
-                const wynik = await odpowiedz.json();
+                const wynik = await odp.json();
 
                 if (wynik.sukces) {
-                    komunikatDiv.className = 'sukces';
-                    komunikatDiv.textContent = wynik.wiadomosc;
+                    statusDiv.style.color = '#27ae60';
+                    statusDiv.textContent = '✅ Dziękujemy! Zgłoszenie zostało zapisane.';
                     formularz.reset();
-                    pobierzZgloszenia(); // Odśwież listę zgłoszeń
                 } else {
-                    komunikatDiv.style.background = '#fed7d7';
-                    komunikatDiv.style.color = '#c53030';
-                    komunikatDiv.textContent = wynik.wiadomosc;
+                    statusDiv.style.color = '#c1622d';
+                    statusDiv.textContent = `❌ ${wynik.wiadomosc}`;
                 }
             } catch (err) {
-                komunikatDiv.style.background = '#fed7d7';
-                komunikatDiv.style.color = '#c53030';
-                komunikatDiv.textContent = 'Błąd połączenia z serwerem fundacji.';
+                statusDiv.style.color = '#c1622d';
+                statusDiv.textContent = '❌ Błąd połączenia z serwerem.';
+            } finally {
+                btnWyslij.disabled = false;
             }
         });
-
-        // Pobierz zgłoszenia przy starcie strony
-        pobierzZgloszenia();
     </script>
 </body>
 </html>
