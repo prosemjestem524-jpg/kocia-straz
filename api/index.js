@@ -5,24 +5,22 @@ const path = require('path');
 
 const app = express();
 
+// Limit pamięci ustalony na 3.5 MB, aby uniknąć przekroczenia limitów Vercel (4.5 MB zapytania)
 const upload = multer({
     storage: multer.memoryStorage(),
-    limits: { fileSize: 8 * 1024 * 1024 } // max 8 MB na zdjęcie
+    limits: { fileSize: 3.5 * 1024 * 1024 } 
 });
 
 app.use(express.static(path.join(__dirname, '..', 'public')));
 app.use(express.json());
 
-// Hasło do panelu admina.
-// NA VERCEL ustaw je w: Project → Settings → Environment Variables → ADMIN_PASSWORD
+// Hasło do panelu admina (zmienna środowiskowa lub wartość domyślna)
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'zmien-to-haslo';
 
-// Pamięć podręczna na zgłoszenia.
-// UWAGA: na Vercel funkcje serverless nie mają stałej pamięci — po "zimnym starcie"
-// (np. po dłuższym braku ruchu, albo bo trafisz na inną instancję) ta tablica się zeruje.
-// Do produkcji podmień to na Vercel KV / Postgres / MongoDB Atlas.
+// Pamięć podręczna w RAM na zgłoszenia (ulotna na Vercel/Serverless)
 let zgloszenia = [];
 
+// Middleware sprawdzający uprawnienia administratora
 function sprawdzHaslo(req, res, next) {
     const haslo = req.headers['x-admin-haslo'] || req.query.haslo;
     if (haslo !== ADMIN_PASSWORD) {
@@ -43,38 +41,43 @@ app.post('/api/zgloszenie', upload.single('zdjecieKotka'), (req, res) => {
         let dataZdjecia = null;
         let aparat = null;
 
-        // Próba odczytu danych EXIF ze zdjęcia
-        // Próba odczytu danych EXIF ze zdjęcia
-        try {
-            const parser = exifParser.create(req.file.buffer);
-            const wynikExif = parser.parse();
+        // exif-parser działa stabilnie tylko dla plików JPEG/JPG
+        const czyJpeg = req.file.mimetype === 'image/jpeg' || req.file.mimetype === 'image/jpg';
 
-            if (wynikExif && wynikExif.tags) {
-                // exif-parser udostępnia gotowe przeliczone wartości w GPSLatitude / GPSLongitude, 
-                // ale bezpieczniej jest sprawdzić ich typ lub odczytać je bezpośrednio.
-                if (typeof wynikExif.tags.GPSLatitude === 'number' && typeof wynikExif.tags.GPSLongitude === 'number') {
-                    szerokosc = wynikExif.tags.GPSLatitude;
-                    dlugosc = wynikExif.tags.GPSLongitude;
-                }
+        if (czyJpeg) {
+            try {
+                const parser = exifParser.create(req.file.buffer);
+                const wynikExif = parser.parse();
 
-                if (wynikExif.tags.DateTimeOriginal) {
-                    // Sprawdzamy czy to timestamp (sekundy) czy napis
-                    const timestamp = Number(wynikExif.tags.DateTimeOriginal);
-                    if (!isNaN(timestamp)) {
-                        dataZdjecia = new Date(timestamp * 1000).toLocaleString('pl-PL');
+                if (wynikExif && wynikExif.tags) {
+                    // Weryfikacja współrzędnych GPS
+                    if (typeof wynikExif.tags.GPSLatitude === 'number') {
+                        szerokosc = wynikExif.tags.GPSLatitude;
+                    }
+                    if (typeof wynikExif.tags.GPSLongitude === 'number') {
+                        dlugosc = wynikExif.tags.GPSLongitude;
+                    }
+
+                    // Weryfikacja daty wykonania zdjęcia
+                    if (wynikExif.tags.DateTimeOriginal) {
+                        const timestamp = Number(wynikExif.tags.DateTimeOriginal);
+                        if (!isNaN(timestamp)) {
+                            dataZdjecia = new Date(timestamp * 1000).toLocaleString('pl-PL');
+                        }
+                    }
+
+                    // Model aparatu
+                    if (wynikExif.tags.Model) {
+                        aparat = String(wynikExif.tags.Model);
                     }
                 }
-
-                if (wynikExif.tags.Model) {
-                    aparat = String(wynikExif.tags.Model);
-                }
+            } catch (exifError) {
+                // Przechwycenie błędu odczytu EXIF — pozwala kontynuować zapis zgłoszenia
+                console.warn('Nie udało się odczytać danych EXIF:', exifError.message);
             }
-        } catch (exifError) {
-            console.error('Błąd podczas odczytu EXIF:', exifError.message);
-            // Nie wywolujemy throw — błąd EXIF nie powinien blokować zapisu zgłoszenia!
         }
 
-        // Zdjęcie trzymamy jako base64 tylko do podglądu w panelu admina
+        // Generowanie ciągu Base64 do podglądu zdjęcia w panelu admina
         const miniatura = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
 
         const noweZgloszenie = {
@@ -89,20 +92,27 @@ app.post('/api/zgloszenie', upload.single('zdjecieKotka'), (req, res) => {
             miniatura
         };
 
-        zgloszenia.unshift(noweZgloszenie); // dodaj na początek listy
+        zgloszenia.unshift(noweZgloszenie);
 
+        // Zwrot odpowiedzi bez pełnego base64 w obiekcie danych dla oszczędności transferu
         res.json({
             sukces: true,
-            wiadomosc: 'Dziękujemy! Zgłoszenie zostało zapisane, a lokalizacja kotka została pomyślnie zlokalizowana w systemie fundacji.',
-            dane: { ...noweZgloszenie, miniatura: undefined }
+            wiadomosc: 'Dziękujemy! Zgłoszenie zostało zapisane, a dane zlokalizowane w systemie.',
+            dane: {
+                id: noweZgloszenie.id,
+                opis: noweZgloszenie.opis,
+                szerokosc: noweZgloszenie.szerokosc,
+                dlugosc: noweZgloszenie.dlugosc,
+                dataZdjecia: noweZgloszenie.dataZdjecia
+            }
         });
     } catch (error) {
-        console.error(error);
+        console.error('Błąd serwera podczas przetwarzania:', error);
         res.status(500).json({ sukces: false, wiadomosc: 'Wystąpił błąd serwera podczas przetwarzania zdjęcia.' });
     }
 });
 
-// ---------- Publiczna lista zgłoszeń (bez zdjęć — te widzi tylko admin) ----------
+// ---------- Publiczna lista zgłoszeń (anonimizowana) ----------
 app.get('/api/zgloszenia', (req, res) => {
     const publiczne = zgloszenia.map(z => ({
         id: z.id,
@@ -114,11 +124,12 @@ app.get('/api/zgloszenia', (req, res) => {
     res.json(publiczne);
 });
 
-// ---------- Panel admina: pełne dane, zdjęcia i metadane EXIF ----------
+// ---------- Panel admina: pobieranie wszystkich zgłoszeń z miniaturami ----------
 app.get('/api/admin/zgloszenia', sprawdzHaslo, (req, res) => {
     res.json(zgloszenia);
 });
 
+// ---------- Panel admina: usuwanie zgłoszenia ----------
 app.delete('/api/admin/zgloszenia/:id', sprawdzHaslo, (req, res) => {
     const id = Number(req.params.id);
     const dlugoscPrzed = zgloszenia.length;
@@ -126,10 +137,10 @@ app.delete('/api/admin/zgloszenia/:id', sprawdzHaslo, (req, res) => {
     res.json({ sukces: zgloszenia.length < dlugoscPrzed });
 });
 
-// Uruchomienie lokalne: node api/index.js
+// Uruchomienie lokalne
 if (require.main === module) {
     const PORT = process.env.PORT || 3000;
-    app.listen(PORT, () => console.log(`Serwer Kociej Straży działa na http://localhost:${PORT}`));
+    app.listen(PORT, () => console.log(`Serwer Kociej Straży działa na port http://localhost:${PORT}`));
 }
 
 module.exports = app;
