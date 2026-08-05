@@ -4,10 +4,10 @@ const path = require('path');
 
 const app = express();
 
-// Limit pamięci — pamiętaj o limitach Vercela (max 4.5 MB na całe zapytanie)
+// Limit wielkości pliku dostosowany do darmowego limitu Vercel (4.5 MB)
 const upload = multer({
     storage: multer.memoryStorage(),
-    limits: { fileSize: 3.5 * 1024 * 1024 } 
+    limits: { fileSize: 3.8 * 1024 * 1024 }
 });
 
 app.use(express.static(path.join(__dirname, '..', 'public')));
@@ -24,72 +24,57 @@ function sprawdzHaslo(req, res, next) {
     next();
 }
 
-// ---------- Zgłoszenie nowego kota ----------
+// Odbiór zgłoszenia
 app.post('/api/zgloszenie', (req, res) => {
     upload.single('zdjecieKotka')(req, res, (err) => {
-
-        // Wyłapanie błędu rozmiaru pliku
         if (err instanceof multer.MulterError) {
             if (err.code === 'LIMIT_FILE_SIZE') {
                 return res.status(400).json({
                     sukces: false,
-                    wiadomosc: 'Zdjęcie jest za duże! Maksymalny rozmiar to 3.5 MB.'
+                    wiadomosc: 'Zdjęcie jest za duże! Maksymalny rozmiar to 3.8 MB.'
                 });
             }
             return res.status(400).json({ sukces: false, wiadomosc: `Błąd przesyłania: ${err.message}` });
         } else if (err) {
-            return res.status(500).json({ sukces: false, wiadomosc: 'Wystąpił nieoczekiwany błąd serwera.' });
+            return res.status(500).json({ sukces: false, wiadomosc: 'Wystąpił błąd serwera.' });
         }
 
         if (!req.file) {
-            return res.status(400).json({ sukces: false, wiadomosc: 'Nie przesłano żadnego zdjęcia!' });
+            return res.status(400).json({ sukces: false, wiadomosc: 'Brak zdjęcia!' });
         }
 
         try {
-            // Zamiana bufora pliku na Base64 (oryginalne metadane EXIF zostają wewnątrz pliku!)
             const miniatura = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+
+            const szerokosc = req.body.szerokosc ? parseFloat(req.body.szerokosc) : null;
+            const dlugosc = req.body.dlugosc ? parseFloat(req.body.dlugosc) : null;
 
             const noweZgloszenie = {
                 id: Date.now(),
                 opis: req.body.opis || 'Kot w potrzebie',
+                szerokosc,
+                dlugosc,
                 data: new Date().toLocaleString('pl-PL'),
                 nazwaPliku: req.file.originalname,
-                miniatura // Zdjecie wraz z nienaruszonymi danymi EXIF
+                miniatura
             };
 
             zgloszenia.unshift(noweZgloszenie);
 
-            res.json({
-                sukces: true,
-                wiadomosc: 'Dziękujemy! Zgłoszenie zostało zapisane.',
-                dane: {
-                    id: noweZgloszenie.id,
-                    opis: noweZgloszenie.opis,
-                    data: noweZgloszenie.data
-                }
-            });
+            res.json({ sukces: true, wiadomosc: 'Zgłoszenie zapisane.' });
         } catch (error) {
-            console.error('Błąd zapisywania zgłoszenia:', error);
-            res.status(500).json({ sukces: false, wiadomosc: 'Błąd serwera podczas zapisywania danych.' });
+            console.error('Błąd zapisu zgłoszenia:', error);
+            res.status(500).json({ sukces: false, wiadomosc: 'Błąd przetwarzania zgłoszenia.' });
         }
     });
 });
 
-// ---------- Publiczna lista zgłoszeń ----------
-app.get('/api/zgloszenia', (req, res) => {
-    const publiczne = zgloszenia.map(z => ({
-        id: z.id,
-        opis: z.opis,
-        data: z.data
-    }));
-    res.json(publiczne);
-});
-
-// ---------- Panel admina (pobiera zdjęcia z EXIF) ----------
+// Zgłoszenia dla panelu admina
 app.get('/api/admin/zgloszenia', sprawdzHaslo, (req, res) => {
     res.json(zgloszenia);
 });
 
+// Usuwanie zgłoszeń
 app.delete('/api/admin/zgloszenia/:id', sprawdzHaslo, (req, res) => {
     const id = Number(req.params.id);
     const dlugoscPrzed = zgloszenia.length;
@@ -97,10 +82,10 @@ app.delete('/api/admin/zgloszenia/:id', sprawdzHaslo, (req, res) => {
     res.json({ sukces: zgloszenia.length < dlugoscPrzed });
 });
 
-// Uruchomienie lokalne
+// Działanie na środowisku lokalnym
 if (require.main === module) {
     const PORT = process.env.PORT || 3000;
-    app.listen(PORT, () => console.log(`Serwer Kociej Straży działa na http://localhost:${PORT}`));
+    app.listen(PORT, () => console.log(`Serwer działa na http://localhost:${PORT}`));
 }
 
 module.exports = app;
