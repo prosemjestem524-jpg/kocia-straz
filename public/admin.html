@@ -10,16 +10,12 @@
     <style>
         :root {
             --ink: #1c2430;
-            --ink-soft: #5b6472;
             --paper: #f7f3ea;
-            --card: #ffffff;
             --amber: #e8a33d;
-            --rust: #c1622d;
             --teal: #35636a;
-            --line: #e5ddc9;
-            --mono: 'IBM Plex Mono', 'Courier New', monospace;
+            --mono: 'IBM Plex Mono', monospace;
             --serif: 'Fraunces', Georgia, serif;
-            --sans: 'Inter', 'Segoe UI', Tahoma, sans-serif;
+            --sans: 'Inter', sans-serif;
         }
 
         * { box-sizing: border-box; }
@@ -32,6 +28,7 @@
             min-height: 100vh;
         }
 
+        /* EKRAN LOGOWANIA */
         #ekran-logowania {
             min-height: 100vh;
             display: flex;
@@ -49,8 +46,6 @@
             width: 100%;
             text-align: center;
         }
-
-        .panel-logowania svg { width: 44px; height: 44px; margin-bottom: 0.75rem; }
 
         .panel-logowania h1 {
             font-family: var(--serif);
@@ -76,7 +71,10 @@
             margin-bottom: 1rem;
         }
 
-        .panel-logowania input:focus { outline: none; border-color: var(--amber); }
+        .panel-logowania input:focus { 
+            outline: none; 
+            border-color: var(--amber); 
+        }
 
         .panel-logowania button {
             width: 100%;
@@ -90,8 +88,6 @@
             font-size: 0.95rem;
         }
 
-        .panel-logowania button:hover { background: #dc9530; }
-
         #blad-logowania {
             display: none;
             color: #ff8a8a;
@@ -99,6 +95,7 @@
             margin-top: 0.9rem;
         }
 
+        /* PANEL GŁÓWNY */
         #panel-glowny { display: none; }
 
         header.pasek {
@@ -114,23 +111,9 @@
         }
 
         header.pasek .marka {
-            display: flex;
-            align-items: center;
-            gap: 0.6rem;
             font-family: var(--serif);
             font-weight: 700;
             font-size: 1.1rem;
-        }
-
-        header.pasek .marka svg { width: 26px; height: 26px; }
-
-        header.pasek .status {
-            font-family: var(--mono);
-            font-size: 0.75rem;
-            color: #a8b0bd;
-            display: flex;
-            align-items: center;
-            gap: 1rem;
         }
 
         header.pasek button.wyloguj {
@@ -139,12 +122,8 @@
             color: #f4efe4;
             padding: 0.45rem 0.9rem;
             border-radius: 100px;
-            font-family: var(--sans);
-            font-size: 0.8rem;
             cursor: pointer;
         }
-
-        header.pasek button.wyloguj:hover { border-color: var(--amber); }
 
         main {
             max-width: 1100px;
@@ -157,15 +136,6 @@
             align-items: center;
             justify-content: space-between;
             margin-bottom: 1.5rem;
-            flex-wrap: wrap;
-            gap: 0.75rem;
-        }
-
-        .pasek-info h2 {
-            font-family: var(--serif);
-            font-size: 1.4rem;
-            margin: 0;
-            color: #f4efe4;
         }
 
         .licznik {
@@ -183,11 +153,8 @@
             color: #f4efe4;
             padding: 0.5rem 1rem;
             border-radius: 8px;
-            font-size: 0.85rem;
             cursor: pointer;
         }
-
-        button.odswiez:hover { border-color: var(--amber); }
 
         .siatka {
             display: grid;
@@ -216,7 +183,6 @@
             font-size: 0.95rem;
             line-height: 1.5;
             margin: 0 0 0.8rem;
-            color: #f4efe4;
         }
 
         .metadane {
@@ -228,18 +194,10 @@
             margin-bottom: 1rem;
         }
 
-        .metadane .znaczek {
-            color: var(--amber);
-            margin-right: 0.4rem;
-        }
-
-        .metadane a { color: var(--teal); text-decoration: none; }
+        .metadane a { color: #72becb; text-decoration: none; }
         .metadane a:hover { text-decoration: underline; }
 
-        .brak-gps {
-            color: #6b7484;
-            font-style: italic;
-        }
+        .brak-gps { color: #6b7484; font-style: italic; }
 
         .akcje-karty {
             display: flex;
@@ -248,7 +206,6 @@
 
         .akcje-karty button, .akcje-karty a {
             flex: 1;
-            font-family: var(--sans);
             font-size: 0.8rem;
             font-weight: 600;
             padding: 0.55rem;
@@ -257,7 +214,6 @@
             border: none;
             text-align: center;
             text-decoration: none;
-            display: inline-block;
         }
 
         .btn-pobierz {
@@ -266,22 +222,17 @@
             border: 1px solid rgba(53, 99, 106, 0.6) !important;
         }
 
-        .btn-pobierz:hover { background: rgba(53, 99, 106, 0.5); }
-
         .btn-usun {
             background: rgba(193,98,45,0.15);
             color: #e08a5e;
             border: 1px solid rgba(193,98,45,0.35) !important;
         }
 
-        .btn-usun:hover { background: rgba(193,98,45,0.28); }
-
         .pusto {
             text-align: center;
             color: #a8b0bd;
             padding: 4rem 1rem;
             font-family: var(--mono);
-            font-size: 0.9rem;
         }
     </style>
 </head>
@@ -289,47 +240,33 @@
 
     <div id="ekran-logowania">
         <div class="panel-logowania">
-            <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M32 4 L56 14 V30 C56 45 46 55 32 60 C18 55 8 45 8 30 V14 Z" fill="#e8a33d" opacity="0.18" stroke="#e8a33d" stroke-width="1.5"/>
-                <path d="M24 26 C24 22 20 20 19 17 C22 17 25 19 26.5 21.5 C28 21 30 21 32 21 C34 21 36 21 37.5 21.5 C39 19 42 17 45 17 C44 20 40 22 40 26 C40 33 36.5 38 32 38 C27.5 38 24 33 24 26 Z" fill="#f4efe4"/>
-                <circle cx="28.5" cy="27" r="1.6" fill="#1c2430"/>
-                <circle cx="35.5" cy="27" r="1.6" fill="#1c2430"/>
-            </svg>
             <h1>Panel administratora</h1>
-            <p>Dostęp tylko dla patrolu Kociej Straży</p>
+            <p>Dostęp tylko dla Kociej Straży</p>
             <input type="password" id="pole-hasla" placeholder="Hasło administratora" autocomplete="current-password">
             <button id="btn-zaloguj">Zaloguj</button>
-            <div id="blad-logowania">Nieprawidłowe hasło. Spróbuj ponownie.</div>
+            <div id="blad-logowania">Nieprawidłowe hasło.</div>
         </div>
     </div>
 
     <div id="panel-glowny">
         <header class="pasek">
-            <div class="marka">
-                <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M32 4 L56 14 V30 C56 45 46 55 32 60 C18 55 8 45 8 30 V14 Z" fill="#e8a33d" opacity="0.18" stroke="#e8a33d" stroke-width="1.5"/>
-                    <path d="M24 26 C24 22 20 20 19 17 C22 17 25 19 26.5 21.5 C28 21 30 21 32 21 C34 21 36 21 37.5 21.5 C39 19 42 17 45 17 C44 20 40 22 40 26 C40 33 36.5 38 32 38 C27.5 38 24 33 24 26 Z" fill="#f4efe4"/>
-                    <circle cx="28.5" cy="27" r="1.6" fill="#1c2430"/>
-                    <circle cx="35.5" cy="27" r="1.6" fill="#1c2430"/>
-                </svg>
-                Kocia Straż — Admin
-            </div>
+            <div class="marka">🐾 Kocia Straż — Admin</div>
             <div class="status">
-                <a href="/index.html" style="color:#a8b0bd;">← Strona główna</a>
+                <a href="/index.html" style="color:#a8b0bd; margin-right: 1rem; text-decoration: none;">← Strona główna</a>
                 <button class="wyloguj" id="btn-wyloguj">Wyloguj</button>
             </div>
         </header>
 
         <main>
             <div class="pasek-info">
-                <h2>Zgłoszenia i zdjęcia</h2>
+                <h2>Lista zgłoszeń</h2>
                 <div style="display:flex; align-items:center; gap:0.7rem;">
                     <span class="licznik" id="licznik-zgloszen">0 zgłoszeń</span>
                     <button class="odswiez" id="btn-odswiez">↻ Odśwież</button>
                 </div>
             </div>
             <div class="siatka" id="siatka-zgloszen">
-                <div class="pusto">Ładowanie...</div>
+                <div class="pusto">Ładowanie danych...</div>
             </div>
         </main>
     </div>
@@ -344,17 +281,9 @@
         const siatkaZgloszen = document.getElementById('siatka-zgloszen');
         const licznikZgloszen = document.getElementById('licznik-zgloszen');
 
-        function pobierzHaslo() {
-            return sessionStorage.getItem(KLUCZ_SESJI) || '';
-        }
-
-        function zapiszHaslo(haslo) {
-            sessionStorage.setItem(KLUCZ_SESJI, haslo);
-        }
-
-        function wyczyscHaslo() {
-            sessionStorage.removeItem(KLUCZ_SESJI);
-        }
+        function pobierzHaslo() { return sessionStorage.getItem(KLUCZ_SESJI) || ''; }
+        function zapiszHaslo(h) { sessionStorage.setItem(KLUCZ_SESJI, h); }
+        function wyczyscHaslo() { sessionStorage.removeItem(KLUCZ_SESJI); }
 
         async function zaloguj(haslo) {
             try {
@@ -395,18 +324,21 @@
                 const karta = document.createElement('div');
                 karta.className = 'karta-zgloszenia';
 
-                let gpsHtml = '<div class="brak-gps">📍 Brak odczytanych danych GPS</div>';
+                // Sekcja GPS
+                let gpsHtml = '<div class="brak-gps">📍 Brak danych GPS</div>';
                 if (z.szerokosc && z.dlugosc) {
                     const mapaUrl = `https://www.google.com/maps?q=${z.szerokosc},${z.dlugosc}`;
-                    gpsHtml = `<div><span class="znaczek">📍</span><a href="${mapaUrl}" target="_blank" rel="noopener">${z.szerokosc.toFixed(5)}, ${z.dlugosc.toFixed(5)} — pokaż na mapie</a></div>`;
+                    gpsHtml = `<div>📍 <a href="${mapaUrl}" target="_blank" rel="noopener">${z.szerokosc.toFixed(5)}, ${z.dlugosc.toFixed(5)} — otwórz w Mapach</a></div>`;
                 }
 
-                const dataZdjeciaHtml = z.dataZdjecia
-                    ? `<div><span class="znaczek">📷</span>Zrobiono: ${z.dataZdjecia}</div>`
-                    : '';
-                const aparatHtml = z.aparat
-                    ? `<div><span class="znaczek">⚙</span>Aparat: ${z.aparat}</div>`
-                    : '';
+                // Rozpoznawanie urządzenia
+                let infoUrzadzenie = z.urzadzenie || 'Nieznane';
+                if (infoUrzadzenie.includes('iPhone')) infoUrzadzenie = '📱 iPhone (iOS)';
+                else if (infoUrzadzenie.includes('Android')) infoUrzadzenie = '📱 Telefon Android';
+                else if (infoUrzadzenie.includes('Windows')) infoUrzadzenie = '💻 Komputer Windows';
+                else if (infoUrzadzenie.includes('Macintosh')) infoUrzadzenie = '💻 Komputer Mac';
+
+                const telefonHtml = z.telefon ? `<div>📞 Telefon: <strong>${z.telefon}</strong></div>` : '';
 
                 karta.innerHTML = `
                     <img class="miniatura" src="${z.miniatura || ''}" alt="Zdjęcie zgłoszenia" loading="lazy">
@@ -414,13 +346,13 @@
                         <p class="opis">${z.opis}</p>
                         <div class="metadane">
                             ${gpsHtml}
-                            ${dataZdjeciaHtml}
-                            ${aparatHtml}
-                            <div><span class="znaczek">🕐</span>Zgłoszono: ${z.data}</div>
-                            <div><span class="znaczek">📄</span>Plik: ${z.nazwaPliku || 'brak nazwy'}</div>
+                            ${telefonHtml}
+                            <div>📱 Urządzenie: ${infoUrzadzenie}</div>
+                            <div>🕐 Zgłoszono: ${z.data}</div>
+                            <div>📄 Plik: ${z.nazwaPliku || 'zdjecie.jpg'}</div>
                         </div>
                         <div class="akcje-karty">
-                            <a href="${z.miniatura || '#'}" download="${z.nazwaPliku || 'zdjecie.jpg'}" class="btn-pobierz">Pobierz plik</a>
+                            <a href="${z.miniatura || '#'}" download="${z.nazwaPliku || 'zdjecie.jpg'}" class="btn-pobierz">Pobierz zdjęcie</a>
                             <button class="btn-usun" data-id="${z.id}">Usuń</button>
                         </div>
                     </div>
@@ -447,12 +379,12 @@
                 const dane = await odp.json();
                 renderujZgloszenia(dane);
             } catch (err) {
-                siatkaZgloszen.innerHTML = '<div class="pusto">Nie udało się pobrać zgłoszeń.</div>';
+                siatkaZgloszen.innerHTML = '<div class="pusto">Nie udało się pobrać danych.</div>';
             }
         }
 
         async function usunZgloszenie(id) {
-            if (!confirm('Na pewno usunąć to zgłoszenie?')) return;
+            if (!confirm('Na pewno usunąć zgłoszenie?')) return;
             try {
                 await fetch(`/api/admin/zgloszenia/${id}`, {
                     method: 'DELETE',
@@ -460,7 +392,7 @@
                 });
                 odswiezListe();
             } catch (err) {
-                alert('Nie udało się usunąć zgłoszenia.');
+                alert('Nie udało się usunąć.');
             }
         }
 
@@ -485,10 +417,9 @@
 
         document.getElementById('btn-odswiez').addEventListener('click', odswiezListe);
 
+        // Automatyczne logowanie, jeśli hasło zostało wcześniej zapisane w sesji
         const zapisaneHaslo = pobierzHaslo();
-        if (zapisaneHaslo) {
-            zaloguj(zapisaneHaslo);
-        }
+        if (zapisaneHaslo) zaloguj(zapisaneHaslo);
     </script>
 </body>
 </html>
