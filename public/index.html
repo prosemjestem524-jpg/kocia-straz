@@ -17,7 +17,9 @@
             --serif: 'Fraunces', Georgia, serif;
         }
 
-        * { box-sizing: border-box; }
+        * { 
+            box-sizing: border-box; 
+        }
 
         body {
             font-family: var(--sans);
@@ -98,8 +100,15 @@
             box-shadow: 1px 1px 0px var(--ink);
         }
 
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+
         #status {
-            margin-top: 1rem;
+            margin-top: 1.2rem;
             font-weight: 600;
             font-size: 0.9rem;
             text-align: center;
@@ -120,10 +129,10 @@
 
             <div class="pole">
                 <label for="opis">Opis zgłoszenia</label>
-                <textarea id="opis" placeholder="Opisz stan kota, znak szczególny lub dokładne miejsce..."></textarea>
+                <textarea id="opis" placeholder="Opisz stan kota, znaki szczególne lub dokładne miejsce..."></textarea>
             </div>
 
-            <button type="submit" id="btn-wyslij">Wyoślij zgłoszenie</button>
+            <button type="submit" id="btn-wyslij">Wyślij zgłoszenie</button>
         </form>
 
         <div id="status"></div>
@@ -154,7 +163,7 @@
             formData.append('opis', opisInput.value);
             formData.append('zdjecieKotka', plik);
 
-            // Pobieramy geolokalizację z przeglądarki
+            // Pobieramy geolokalizację bezpośrednio z przeglądarki
             if ('geolocation' in navigator) {
                 try {
                     const pozycja = await new Promise((resolve, reject) => {
