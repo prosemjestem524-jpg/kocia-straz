@@ -6,125 +6,264 @@
     <title>Kocia Straż — Zgłoś kota</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --ink: #1c2430;
-            --paper: #f7f3ea;
-            --amber: #e8a33d;
-            --card: #ffffff;
-            --sans: 'Inter', sans-serif;
-            --serif: 'Fraunces', Georgia, serif;
+            --primary: #2d5a4c;
+            --primary-hover: #23473c;
+            --accent: #e07a5f;
+            --bg-body: #f4f6f5;
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --border-color: #e5e7eb;
+            --border-focus: #2d5a4c;
+            --radius-lg: 16px;
+            --radius-md: 10px;
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.03);
+            --font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
         }
 
         * { 
             box-sizing: border-box; 
+            margin: 0;
+            padding: 0;
         }
 
         body {
-            font-family: var(--sans);
-            background: var(--paper);
-            color: var(--ink);
-            margin: 0;
-            padding: 1.5rem;
+            font-family: var(--font-family);
+            background-color: var(--bg-body);
+            color: var(--text-main);
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
+            padding: 1.5rem;
+            line-height: 1.5;
         }
 
         .kontener {
-            background: var(--card);
-            border: 2px solid var(--ink);
-            border-radius: 16px;
-            padding: 2rem;
-            max-width: 440px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 2.5rem 2rem;
+            max-width: 460px;
             width: 100%;
-            box-shadow: 6px 6px 0px var(--ink);
+            box-shadow: var(--shadow-md);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .header-icon {
+            width: 48px;
+            height: 48px;
+            background: rgba(45, 90, 76, 0.1);
+            color: var(--primary);
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 0.75rem;
         }
 
         h1 {
-            font-family: var(--serif);
-            margin: 0 0 0.5rem;
-            font-size: 1.8rem;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-main);
+            letter-spacing: -0.02em;
+            margin-bottom: 0.35rem;
         }
 
         p.opis-strony {
-            color: #5b6472;
+            color: var(--text-muted);
             font-size: 0.9rem;
-            margin-bottom: 1.5rem;
         }
 
         .pole {
-            margin-bottom: 1.2rem;
+            margin-bottom: 1.25rem;
         }
 
         label {
             display: block;
             font-weight: 600;
-            margin-bottom: 0.4rem;
-            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+            color: var(--text-main);
         }
 
-        textarea, input[type="file"] {
+        /* Dedykowany kontener do wgrywania plików */
+        .upload-box {
+            position: relative;
+            border: 2px dashed var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            text-align: center;
+            background: #fafafa;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .upload-box:hover, .upload-box.dragover {
+            border-color: var(--primary);
+            background: rgba(45, 90, 76, 0.02);
+        }
+
+        .upload-box input[type="file"] {
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
-            padding: 0.75rem;
-            border: 2px solid var(--ink);
-            border-radius: 8px;
-            font-family: var(--sans);
-            font-size: 0.95rem;
-            background: #fff;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .upload-icon {
+            font-size: 1.75rem;
+            margin-bottom: 0.25rem;
+            display: block;
+        }
+
+        .upload-text {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .upload-text span {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .file-name {
+            margin-top: 0.5rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--primary);
+            word-break: break-all;
         }
 
         textarea {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            font-family: inherit;
+            font-size: 0.9rem;
+            color: var(--text-main);
+            background: #fff;
             resize: vertical;
-            min-height: 90px;
+            min-height: 100px;
+            outline: none;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        textarea:focus {
+            border-color: var(--border-focus);
+            box-shadow: 0 0 0 3px rgba(45, 90, 76, 0.15);
         }
 
         button {
             width: 100%;
-            background: var(--amber);
-            color: var(--ink);
-            border: 2px solid var(--ink);
-            padding: 0.9rem;
-            font-weight: 700;
-            font-size: 1rem;
-            border-radius: 8px;
+            background: var(--primary);
+            color: #ffffff;
+            border: none;
+            padding: 0.875rem 1rem;
+            font-family: inherit;
+            font-weight: 600;
+            font-size: 0.95rem;
+            border-radius: var(--radius-md);
             cursor: pointer;
-            box-shadow: 3px 3px 0px var(--ink);
-            transition: transform 0.1s, box-shadow 0.1s;
+            box-shadow: var(--shadow-sm);
+            transition: background-color 0.2s ease, transform 0.1s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        button:hover {
+            background: var(--primary-hover);
         }
 
         button:active {
-            transform: translate(2px, 2px);
-            box-shadow: 1px 1px 0px var(--ink);
+            transform: translateY(1px);
         }
 
         button:disabled {
-            background: #ccc;
+            background: #a0aec0;
             cursor: not-allowed;
-            box-shadow: none;
             transform: none;
         }
 
         #status {
-            margin-top: 1.2rem;
-            font-weight: 600;
-            font-size: 0.9rem;
+            margin-top: 1rem;
+            font-weight: 500;
+            font-size: 0.875rem;
             text-align: center;
+            padding: 0.75rem;
+            border-radius: var(--radius-md);
+            display: none;
+        }
+
+        #status.visible {
+            display: block;
+        }
+
+        #status.info {
+            background: #eef6f5;
+            color: #23473c;
+        }
+
+        #status.success {
+            background: #ecfdf5;
+            color: #065f46;
+        }
+
+        #status.error {
+            background: #fef2f2;
+            color: #991b1b;
+        }
+
+        /* Animacja ładowania (Spinner) */
+        .spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid #ffffff;
+            border-bottom-color: transparent;
+            border-radius: 50%;
+            display: inline-block;
+            animation: rotation 1s linear infinite;
+        }
+
+        @keyframes rotation {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body>
 
     <div class="kontener">
-        <h1>🐾 Kocia Straż</h1>
-        <p class="opis-strony">Zrób zdjęcie znalezionemu kotu i prześlij zgłoszenie.</p>
+        <div class="header">
+            <div class="header-icon">🐾</div>
+            <h1>Kocia Straż</h1>
+            <p class="opis-strony">Zrób zdjęcie znalezionemu kotu i przesłij zgłoszenie.</p>
+        </div>
 
         <form id="formularz-zgloszenia">
             <div class="pole">
                 <label for="zdjecieKotka">Zdjęcie kota</label>
-                <input type="file" id="zdjecieKotka" accept="image/*" capture="environment" required>
+                <div class="upload-box" id="drop-zone">
+                    <span class="upload-icon">📷</span>
+                    <div class="upload-text"><span>Kliknij, aby dodać zdjęcie</span> lub przeciągnij plik</div>
+                    <div class="file-name" id="file-name-display"></div>
+                    <input type="file" id="zdjecieKotka" accept="image/*" capture="environment" required>
+                </div>
             </div>
 
             <div class="pole">
@@ -132,7 +271,9 @@
                 <textarea id="opis" placeholder="Opisz stan kota, znaki szczególne lub dokładne miejsce..."></textarea>
             </div>
 
-            <button type="submit" id="btn-wyslij">Wyślij zgłoszenie</button>
+            <button type="submit" id="btn-wyslij">
+                <span id="btn-text">Wyślij zgłoszenie</span>
+            </button>
         </form>
 
         <div id="status"></div>
@@ -142,28 +283,46 @@
         const formularz = document.getElementById('formularz-zgloszenia');
         const statusDiv = document.getElementById('status');
         const btnWyslij = document.getElementById('btn-wyslij');
+        const btnText = document.getElementById('btn-text');
+        const zdjecieInput = document.getElementById('zdjecieKotka');
+        const fileNameDisplay = document.getElementById('file-name-display');
+
+        // Wyświetlanie nazwy pliku po wyborze
+        zdjecieInput.addEventListener('change', () => {
+            if (zdjecieInput.files.length > 0) {
+                fileNameDisplay.textContent = `Wybrano: ${zdjecieInput.files[0].name}`;
+            } else {
+                fileNameDisplay.textContent = '';
+            }
+        });
+
+        // Pomocnicza funkcja do ustawiania statusu
+        function ustawStatus(tekst, typ) {
+            statusDiv.className = `visible ${typ}`;
+            statusDiv.textContent = tekst;
+        }
 
         formularz.addEventListener('submit', async (e) => {
             e.preventDefault();
 
             const opisInput = document.getElementById('opis');
-            const zdjecieInput = document.getElementById('zdjecieKotka');
             const plik = zdjecieInput.files[0];
 
             if (!plik) {
-                alert('Proszę zrobić lub wybrać zdjęcie!');
+                ustawStatus('Proszę zrobić lub wybrać zdjęcie!', 'error');
                 return;
             }
 
+            // Stan ładowania przycisku
             btnWyslij.disabled = true;
-            statusDiv.style.color = '#35636a';
-            statusDiv.textContent = 'Pobieranie lokalizacji GPS...';
+            btnText.innerHTML = '<span class="spinner"></span> Przetwarzanie...';
+            ustawStatus('Pobieranie lokalizacji GPS...', 'info');
 
             const formData = new FormData();
             formData.append('opis', opisInput.value);
             formData.append('zdjecieKotka', plik);
 
-            // Pobieramy geolokalizację bezpośrednio z przeglądarki
+            // Pobieramy geolokalizację
             if ('geolocation' in navigator) {
                 try {
                     const pozycja = await new Promise((resolve, reject) => {
@@ -181,7 +340,7 @@
                 }
             }
 
-            statusDiv.textContent = 'Wysyłanie zgłoszenia...';
+            ustawStatus('Wysyłanie zgłoszenia...', 'info');
 
             try {
                 const odp = await fetch('/api/zgloszenie', {
@@ -192,18 +351,17 @@
                 const wynik = await odp.json();
 
                 if (wynik.sukces) {
-                    statusDiv.style.color = '#27ae60';
-                    statusDiv.textContent = '✅ Dziękujemy! Zgłoszenie zostało zapisane.';
+                    ustawStatus('✅ Dziękujemy! Zgłoszenie zostało zapisane.', 'success');
                     formularz.reset();
+                    fileNameDisplay.textContent = '';
                 } else {
-                    statusDiv.style.color = '#c1622d';
-                    statusDiv.textContent = `❌ ${wynik.wiadomosc}`;
+                    ustawStatus(`❌ ${wynik.wiadomosc}`, 'error');
                 }
             } catch (err) {
-                statusDiv.style.color = '#c1622d';
-                statusDiv.textContent = '❌ Błąd połączenia z serwerem.';
+                ustawStatus('❌ Błąd połączenia z serwerem.', 'error');
             } finally {
                 btnWyslij.disabled = false;
+                btnText.textContent = 'Wyślij zgłoszenie';
             }
         });
     </script>
