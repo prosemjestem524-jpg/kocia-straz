@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel administratora — Kocia Straż</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --ink: #1c2430;
+            --ink-soft: #5b6472;
+            --paper: #f7f3ea;
+            --card: #ffffff;
+            --amber: #e8a33d;
+            --rust: #c1622d;
+            --teal: #35636a;
+            --line: #e5ddc9;
+            --mono: 'IBM Plex Mono', 'Courier New', monospace;
+            --serif: 'Fraunces', Georgia, serif;
+            --sans: 'Inter', 'Segoe UI', Tahoma, sans-serif;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: var(--sans);
+            background: var(--ink);
+            color: #f4efe4;
+            margin: 0;
+            min-height: 100vh;
+        }
+
+        /* ---------- EKRAN LOGOWANIA ---------- */
+        #ekran-logowania {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+        }
+
+        .panel-logowania {
+            background: #232c3a;
+            border: 1px solid #333f52;
+            border-radius: 14px;
+            padding: 2.5rem;
+            max-width: 360px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .panel-logowania svg { width: 44px; height: 44px; margin-bottom: 0.75rem; }
+
+        .panel-logowania h1 {
+            font-family: var(--serif);
+            font-size: 1.4rem;
+            margin: 0 0 0.4rem;
+        }
+
+        .panel-logowania p {
+            color: #a8b0bd;
+            font-size: 0.88rem;
+            margin: 0 0 1.5rem;
+        }
+
+        .panel-logowania input {
+            width: 100%;
+            padding: 0.75rem 0.9rem;
+            border-radius: 8px;
+            border: 1.5px solid #3c4759;
+            background: #1a212c;
+            color: #f4efe4;
+            font-family: var(--mono);
+            font-size: 0.95rem;
+            margin-bottom: 1rem;
+        }
+
+        .panel-logowania input:focus { outline: none; border-color: var(--amber); }
+
+        .panel-logowania button {
+            width: 100%;
+            background: var(--amber);
+            color: #1c2430;
+            border: none;
+            padding: 0.8rem;
+            font-weight: 700;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.95rem;
+        }
+
+        .panel-logowania button:hover { background: #dc9530; }
+
+        #blad-logowania {
+            display: none;
+            color: #ff8a8a;
+            font-size: 0.85rem;
+            margin-top: 0.9rem;
+        }
+
+        /* ---------- PANEL GŁÓWNY ---------- */
+        #panel-glowny { display: none; }
+
+        header.pasek {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.25rem 2rem;
+            border-bottom: 1px solid #2c3646;
+            position: sticky;
+            top: 0;
+            background: var(--ink);
+            z-index: 5;
+        }
+
+        header.pasek .marka {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            font-family: var(--serif);
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        header.pasek .marka svg { width: 26px; height: 26px; }
+
+        header.pasek .status {
+            font-family: var(--mono);
+            font-size: 0.75rem;
+            color: #a8b0bd;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        header.pasek button.wyloguj {
+            background: none;
+            border: 1px solid #3c4759;
+            color: #f4efe4;
+            padding: 0.45rem 0.9rem;
+            border-radius: 100px;
+            font-family: var(--sans);
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+
+        header.pasek button.wyloguj:hover { border-color: var(--amber); }
+
+        main {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .pasek-info {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+
+        .pasek-info h2 {
+            font-family: var(--serif);
+            font-size: 1.4rem;
+            margin: 0;
+            color: #f4efe4;
+        }
+
+        .licznik {
+            font-family: var(--mono);
+            font-size: 0.8rem;
+            color: var(--amber);
+            background: rgba(232,163,61,0.12);
+            padding: 0.3rem 0.7rem;
+            border-radius: 100px;
+        }
+
+        button.odswiez {
+            background: #232c3a;
+            border: 1px solid #3c4759;
+            color: #f4efe4;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+
+        button.odswiez:hover { border-color: var(--amber); }
+
+        .siatka {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.1rem;
+        }
+
+        .karta-zgloszenia {
+            background: #232c3a;
+            border: 1px solid #2c3646;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .karta-zgloszenia .miniatura {
+            width: 100%;
+            height: 190px;
+            object-fit: cover;
+            display: block;
+            background: #1a212c;
+        }
+
+        .karta-zgloszenia .tresc { padding: 1.1rem 1.2rem 1.3rem; }
+
+        .karta-zgloszenia .opis {
+            font-size: 0.95rem;
+            line-height: 1.5;
+            margin: 0 0 0.8rem;
+            color: #f4efe4;
+        }
+
+        .metadane {
+            display: grid;
+            gap: 0.4rem;
+            font-family: var(--mono);
+            font-size: 0.78rem;
+            color: #a8b0bd;
+            margin-bottom: 1rem;
+        }
+
+        .metadane .znaczek {
+            color: var(--amber);
+            margin-right: 0.4rem;
+        }
+
+        .metadane a { color: var(--teal); text-decoration: none; }
+        .metadane a:hover { text-decoration: underline; }
+
+        .brak-gps {
+            color: #6b7484;
+            font-style: italic;
+        }
+
+        .akcje-karty {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .akcje-karty button {
+            flex: 1;
+            font-family: var(--sans);
+            font-size: 0.8rem;
+            font-weight: 600;
+            padding: 0.55rem;
+            border-radius: 6px;
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn-usun {
+            background: rgba(193,98,45,0.15);
+            color: #e08a5e;
+            border: 1px solid rgba(193,98,45,0.35) !important;
+        }
+
+        .btn-usun:hover { background: rgba(193,98,45,0.28); }
+
+        .pusto {
+            text-align: center;
+            color: #a8b0bd;
+            padding: 4rem 1rem;
+            font-family: var(--mono);
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- EKRAN LOGOWANIA -->
+    <div id="ekran-logowania">
+        <div class="panel-logowania">
+            <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M32 4 L56 14 V30 C56 45 46 55 32 60 C18 55 8 45 8 30 V14 Z" fill="#e8a33d" opacity="0.18" stroke="#e8a33d" stroke-width="1.5"/>
+                <path d="M24 26 C24 22 20 20 19 17 C22 17 25 19 26.5 21.5 C28 21 30 21 32 21 C34 21 36 21 37.5 21.5 C39 19 42 17 45 17 C44 20 40 22 40 26 C40 33 36.5 38 32 38 C27.5 38 24 33 24 26 Z" fill="#f4efe4"/>
+                <circle cx="28.5" cy="27" r="1.6" fill="#1c2430"/>
+                <circle cx="35.5" cy="27" r="1.6" fill="#1c2430"/>
+            </svg>
+            <h1>Panel administratora</h1>
+            <p>Dostęp tylko dla patrolu Kociej Straży</p>
+            <input type="password" id="pole-hasla" placeholder="Hasło administratora" autocomplete="current-password">
+            <button id="btn-zaloguj">Zaloguj</button>
+            <div id="blad-logowania">Nieprawidłowe hasło. Spróbuj ponownie.</div>
+        </div>
+    </div>
+
+    <!-- PANEL GŁÓWNY -->
+    <div id="panel-glowny">
+        <header class="pasek">
+            <div class="marka">
+                <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M32 4 L56 14 V30 C56 45 46 55 32 60 C18 55 8 45 8 30 V14 Z" fill="#e8a33d" opacity="0.18" stroke="#e8a33d" stroke-width="1.5"/>
+                    <path d="M24 26 C24 22 20 20 19 17 C22 17 25 19 26.5 21.5 C28 21 30 21 32 21 C34 21 36 21 37.5 21.5 C39 19 42 17 45 17 C44 20 40 22 40 26 C40 33 36.5 38 32 38 C27.5 38 24 33 24 26 Z" fill="#f4efe4"/>
+                    <circle cx="28.5" cy="27" r="1.6" fill="#1c2430"/>
+                    <circle cx="35.5" cy="27" r="1.6" fill="#1c2430"/>
+                </svg>
+                Kocia Straż — Admin
+            </div>
+            <div class="status">
+                <a href="/index.html" style="color:#a8b0bd;">← Strona główna</a>
+                <button class="wyloguj" id="btn-wyloguj">Wyloguj</button>
+            </div>
+        </header>
+
+        <main>
+            <div class="pasek-info">
+                <h2>Zgłoszenia i metadane EXIF</h2>
+                <div style="display:flex; align-items:center; gap:0.7rem;">
+                    <span class="licznik" id="licznik-zgloszen">0 zgłoszeń</span>
+                    <button class="odswiez" id="btn-odswiez">↻ Odśwież</button>
+                </div>
+            </div>
+            <div class="siatka" id="siatka-zgloszen">
+                <div class="pusto">Ładowanie...</div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const KLUCZ_SESJI = 'kocia-straz-admin-haslo';
+
+        const ekranLogowania = document.getElementById('ekran-logowania');
+        const panelGlowny = document.getElementById('panel-glowny');
+        const poleHasla = document.getElementById('pole-hasla');
+        const bladLogowania = document.getElementById('blad-logowania');
+        const siatkaZgloszen = document.getElementById('siatka-zgloszen');
+        const licznikZgloszen = document.getElementById('licznik-zgloszen');
+
+        function pobierzHaslo() {
+            return sessionStorage.getItem(KLUCZ_SESJI) || '';
+        }
+
+        function zapiszHaslo(haslo) {
+            sessionStorage.setItem(KLUCZ_SESJI, haslo);
+        }
+
+        function wyczyscHaslo() {
+            sessionStorage.removeItem(KLUCZ_SESJI);
+        }
+
+        async function zaloguj(haslo) {
+            try {
+                const odp = await fetch('/api/admin/zgloszenia', {
+                    headers: { 'x-admin-haslo': haslo }
+                });
+                if (odp.status === 401) {
+                    bladLogowania.style.display = 'block';
+                    return false;
+                }
+                const dane = await odp.json();
+                zapiszHaslo(haslo);
+                pokazPanel(dane);
+                return true;
+            } catch (err) {
+                bladLogowania.textContent = 'Błąd połączenia z serwerem.';
+                bladLogowania.style.display = 'block';
+                return false;
+            }
+        }
+
+        function pokazPanel(dane) {
+            ekranLogowania.style.display = 'none';
+            panelGlowny.style.display = 'block';
+            renderujZgloszenia(dane);
+        }
+
+        function renderujZgloszenia(dane) {
+            licznikZgloszen.textContent = `${dane.length} zgłoszeń`;
+
+            if (dane.length === 0) {
+                siatkaZgloszen.innerHTML = '<div class="pusto">Brak zgłoszeń w bazie.</div>';
+                return;
+            }
+
+            siatkaZgloszen.innerHTML = '';
+            dane.forEach(z => {
+                const karta = document.createElement('div');
+                karta.className = 'karta-zgloszenia';
+
+                let gpsHtml = '<div class="brak-gps">📍 Brak danych GPS w metadanych zdjęcia</div>';
+                if (z.szerokosc && z.dlugosc) {
+                    const mapaUrl = `https://www.google.com/maps?q=${z.szerokosc},${z.dlugosc}`;
+                    gpsHtml = `<div><span class="znaczek">📍</span><a href="${mapaUrl}" target="_blank" rel="noopener">${z.szerokosc.toFixed(5)}, ${z.dlugosc.toFixed(5)} — pokaż na mapie</a></div>`;
+                }
+
+                const dataZdjeciaHtml = z.dataZdjecia
+                    ? `<div><span class="znaczek">📷</span>Zrobiono: ${z.dataZdjecia}</div>`
+                    : '';
+                const aparatHtml = z.aparat
+                    ? `<div><span class="znaczek">⚙</span>Aparat: ${z.aparat}</div>`
+                    : '';
+
+                karta.innerHTML = `
+                    <img class="miniatura" src="${z.miniatura || ''}" alt="Zdjęcie zgłoszenia" loading="lazy">
+                    <div class="tresc">
+                        <p class="opis">${z.opis}</p>
+                        <div class="metadane">
+                            ${gpsHtml}
+                            ${dataZdjeciaHtml}
+                            ${aparatHtml}
+                            <div><span class="znaczek">🕐</span>Zgłoszono: ${z.data}</div>
+                            <div><span class="znaczek">📄</span>Plik: ${z.nazwaPliku || 'brak nazwy'}</div>
+                        </div>
+                        <div class="akcje-karty">
+                            <button class="btn-usun" data-id="${z.id}">Usuń zgłoszenie</button>
+                        </div>
+                    </div>
+                `;
+                siatkaZgloszen.appendChild(karta);
+            });
+
+            document.querySelectorAll('.btn-usun').forEach(btn => {
+                btn.addEventListener('click', () => usunZgloszenie(btn.dataset.id));
+            });
+        }
+
+        async function odswiezListe() {
+            try {
+                const odp = await fetch('/api/admin/zgloszenia', {
+                    headers: { 'x-admin-haslo': pobierzHaslo() }
+                });
+                if (odp.status === 401) {
+                    wyczyscHaslo();
+                    panelGlowny.style.display = 'none';
+                    ekranLogowania.style.display = 'flex';
+                    return;
+                }
+                const dane = await odp.json();
+                renderujZgloszenia(dane);
+            } catch (err) {
+                siatkaZgloszen.innerHTML = '<div class="pusto">Nie udało się pobrać zgłoszeń.</div>';
+            }
+        }
+
+        async function usunZgloszenie(id) {
+            if (!confirm('Na pewno usunąć to zgłoszenie?')) return;
+            try {
+                await fetch(`/api/admin/zgloszenia/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'x-admin-haslo': pobierzHaslo() }
+                });
+                odswiezListe();
+            } catch (err) {
+                alert('Nie udało się usunąć zgłoszenia.');
+            }
+        }
+
+        document.getElementById('btn-zaloguj').addEventListener('click', () => {
+            bladLogowania.style.display = 'none';
+            zaloguj(poleHasla.value);
+        });
+
+        poleHasla.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                bladLogowania.style.display = 'none';
+                zaloguj(poleHasla.value);
+            }
+        });
+
+        document.getElementById('btn-wyloguj').addEventListener('click', () => {
+            wyczyscHaslo();
+            panelGlowny.style.display = 'none';
+            ekranLogowania.style.display = 'flex';
+            poleHasla.value = '';
+        });
+
+        document.getElementById('btn-odswiez').addEventListener('click', odswiezListe);
+
+        // Jeśli hasło jest już zapisane w tej sesji przeglądarki — zaloguj automatycznie
+        const zapisaneHaslo = pobierzHaslo();
+        if (zapisaneHaslo) {
+            zaloguj(zapisaneHaslo);
+        }
+    </script>
+</body>
+</html>
