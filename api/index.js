@@ -1,14 +1,13 @@
 const express = require('express');
 const multer = require('multer');
-const ExifReader = require('exifreader');
 const path = require('path');
 
 const app = express();
 
-// Konfiguracja Multer (pamięć RAM, limit 10 MB)
+// Limit pamięci — pamiętaj o limitach Vercela (max 4.5 MB na całe zapytanie)
 const upload = multer({
     storage: multer.memoryStorage(),
-    limits: { fileSize: 10 * 1024 * 1024 } // 10 MB limitu
+    limits: { fileSize: 3.5 * 1024 * 1024 } 
 });
 
 app.use(express.static(path.join(__dirname, '..', 'public')));
@@ -26,69 +25,36 @@ function sprawdzHaslo(req, res, next) {
 }
 
 // ---------- Zgłoszenie nowego kota ----------
-// Używamy funkcji opakowującej Multera, aby wyłapać błąd za dużego pliku
 app.post('/api/zgloszenie', (req, res) => {
-    upload.single('zdjecieKotka')(req, res, async (err) => {
+    upload.single('zdjecieKotka')(req, res, (err) => {
 
-        // 1. Obsługa błędów przesyłania pliku (np. za duży plik)
+        // Wyłapanie błędu rozmiaru pliku
         if (err instanceof multer.MulterError) {
             if (err.code === 'LIMIT_FILE_SIZE') {
                 return res.status(400).json({
                     sukces: false,
-                    wiadomosc: 'Zdjęcie jest za duże! Maksymalny rozmiar to 10 MB.'
+                    wiadomosc: 'Zdjęcie jest za duże! Maksymalny rozmiar to 3.5 MB.'
                 });
             }
             return res.status(400).json({ sukces: false, wiadomosc: `Błąd przesyłania: ${err.message}` });
         } else if (err) {
-            return res.status(500).json({ sukces: false, wiadomosc: 'Wystąpił nieoczekiwany błąd podczas wczytywania pliku.' });
+            return res.status(500).json({ sukces: false, wiadomosc: 'Wystąpił nieoczekiwany błąd serwera.' });
         }
 
         if (!req.file) {
             return res.status(400).json({ sukces: false, wiadomosc: 'Nie przesłano żadnego zdjęcia!' });
         }
 
-        let szerokosc = null;
-        let dlugosc = null;
-        let dataZdjecia = null;
-        let aparat = null;
-
-        // 2. Bezpieczny odczyt EXIF przy użyciu ExifReader
         try {
-            const tags = ExifReader.load(req.file.buffer, { expanded: true });
-
-            // Współrzędne GPS
-            if (tags.gps && tags.gps.Latitude && tags.gps.Longitude) {
-                szerokosc = tags.gps.Latitude;
-                dlugosc = tags.gps.Longitude;
-            }
-
-            // Data wykonania zdjęcia
-            if (tags.exif && tags.exif.DateTimeOriginal) {
-                dataZdjecia = tags.exif.DateTimeOriginal.description;
-            }
-
-            // Model aparatu
-            if (tags.exif && tags.exif.Model) {
-                aparat = tags.exif.Model.description;
-            }
-        } catch (exifErr) {
-            // Jeśli plik nie ma EXIF lub nie jest wspierany, kod przechodzi dalej bez błędu
-            console.log('Brak danych EXIF lub nie udało się ich odczytać:', exifErr.message);
-        }
-
-        try {
+            // Zamiana bufora pliku na Base64 (oryginalne metadane EXIF zostają wewnątrz pliku!)
             const miniatura = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
 
             const noweZgloszenie = {
                 id: Date.now(),
                 opis: req.body.opis || 'Kot w potrzebie',
-                szerokosc,
-                dlugosc,
-                dataZdjecia,
-                aparat,
                 data: new Date().toLocaleString('pl-PL'),
                 nazwaPliku: req.file.originalname,
-                miniatura
+                miniatura // Zdjecie wraz z nienaruszonymi danymi EXIF
             };
 
             zgloszenia.unshift(noweZgloszenie);
@@ -99,12 +65,11 @@ app.post('/api/zgloszenie', (req, res) => {
                 dane: {
                     id: noweZgloszenie.id,
                     opis: noweZgloszenie.opis,
-                    szerokosc: noweZgloszenie.szerokosc,
-                    dlugosc: noweZgloszenie.dlugosc
+                    data: noweZgloszenie.data
                 }
             });
         } catch (error) {
-            console.error('Błąd podczas tworzenia zgłoszenia:', error);
+            console.error('Błąd zapisywania zgłoszenia:', error);
             res.status(500).json({ sukces: false, wiadomosc: 'Błąd serwera podczas zapisywania danych.' });
         }
     });
@@ -115,14 +80,12 @@ app.get('/api/zgloszenia', (req, res) => {
     const publiczne = zgloszenia.map(z => ({
         id: z.id,
         opis: z.opis,
-        szerokosc: z.szerokosc,
-        dlugosc: z.dlugosc,
         data: z.data
     }));
     res.json(publiczne);
 });
 
-// ---------- Panel admina ----------
+// ---------- Panel admina (pobiera zdjęcia z EXIF) ----------
 app.get('/api/admin/zgloszenia', sprawdzHaslo, (req, res) => {
     res.json(zgloszenia);
 });
@@ -137,7 +100,7 @@ app.delete('/api/admin/zgloszenia/:id', sprawdzHaslo, (req, res) => {
 // Uruchomienie lokalne
 if (require.main === module) {
     const PORT = process.env.PORT || 3000;
-    app.listen(PORT, () => console.log(`Serwer Kociej Straży działa na port http://localhost:${PORT}`));
+    app.listen(PORT, () => console.log(`Serwer Kociej Straży działa na http://localhost:${PORT}`));
 }
 
 module.exports = app;
