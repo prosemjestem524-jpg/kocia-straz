@@ -44,24 +44,34 @@ app.post('/api/zgloszenie', upload.single('zdjecieKotka'), (req, res) => {
         let aparat = null;
 
         // Próba odczytu danych EXIF ze zdjęcia
+        // Próba odczytu danych EXIF ze zdjęcia
         try {
             const parser = exifParser.create(req.file.buffer);
             const wynikExif = parser.parse();
 
-            if (wynikExif.tags) {
-                if (wynikExif.tags.GPSLatitude && wynikExif.tags.GPSLongitude) {
+            if (wynikExif && wynikExif.tags) {
+                // exif-parser udostępnia gotowe przeliczone wartości w GPSLatitude / GPSLongitude, 
+                // ale bezpieczniej jest sprawdzić ich typ lub odczytać je bezpośrednio.
+                if (typeof wynikExif.tags.GPSLatitude === 'number' && typeof wynikExif.tags.GPSLongitude === 'number') {
                     szerokosc = wynikExif.tags.GPSLatitude;
                     dlugosc = wynikExif.tags.GPSLongitude;
                 }
+
                 if (wynikExif.tags.DateTimeOriginal) {
-                    dataZdjecia = new Date(wynikExif.tags.DateTimeOriginal * 1000).toLocaleString('pl-PL');
+                    // Sprawdzamy czy to timestamp (sekundy) czy napis
+                    const timestamp = Number(wynikExif.tags.DateTimeOriginal);
+                    if (!isNaN(timestamp)) {
+                        dataZdjecia = new Date(timestamp * 1000).toLocaleString('pl-PL');
+                    }
                 }
+
                 if (wynikExif.tags.Model) {
-                    aparat = wynikExif.tags.Model;
+                    aparat = String(wynikExif.tags.Model);
                 }
             }
         } catch (exifError) {
-            console.log('Brak danych EXIF lub zdjęcie ich nie zawiera.');
+            console.error('Błąd podczas odczytu EXIF:', exifError.message);
+            // Nie wywolujemy throw — błąd EXIF nie powinien blokować zapisu zgłoszenia!
         }
 
         // Zdjęcie trzymamy jako base64 tylko do podglądu w panelu admina
