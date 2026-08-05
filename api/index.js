@@ -4,17 +4,41 @@ const path = require('path');
 
 const app = express();
 
-// Limit wielkości pliku dostosowany do darmowego limitu Vercel (4.5 MB)
 const upload = multer({
     storage: multer.memoryStorage(),
     limits: { fileSize: 3.8 * 1024 * 1024 }
 });
 
-app.use(express.static(path.join(__dirname, '..', 'public')));
 app.use(express.json());
 
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'zmien-to-haslo';
 let zgloszenia = [];
+let odwiedziny = []; // Tablica do przechowywania historii odwiedzin
+
+// Middleware do rejestrowania każdej wizyty na stronie
+app.use((req, res, next) => {
+    // Pomijamy zapytania o pliki statyczne (css, js itp.), logujemy główne wejścia i API
+    if (req.path.startsWith('/api') || req.path === '/' || req.path.endsWith('.html')) {
+        const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+        const wpis = {
+            ip: ip ? ip.split(',')[0].trim() : 'Nieznane',
+            sciezka: req.path,
+            metoda: req.method,
+            przegladarka: req.headers['user-agent'] || 'Nieznana',
+            data: new Date().toLocaleString('pl-PL')
+        };
+        
+        odwiedziny.unshift(wpis);
+        // Ograniczamy historię do ostatnich 100 odwiedzin
+        if (odwiedziny.length > 100) odwiedziny.pop();
+
+        console.log(`[WIZYTA] ${wpis.data} - IP: ${wpis.ip} - Ścieżka: ${wpis.sciezka}`);
+    }
+    next();
+});
+
+// Serwowanie plików statycznych z folderu public
+app.use(express.static(path.join(__dirname, '..', 'public')));
 
 function sprawdzHaslo(req, res, next) {
     const haslo = req.headers['x-admin-haslo'] || req.query.haslo;
@@ -45,7 +69,6 @@ app.post('/api/zgloszenie', (req, res) => {
 
         try {
             const miniatura = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
-
             const szerokosc = req.body.szerokosc ? parseFloat(req.body.szerokosc) : null;
             const dlugosc = req.body.dlugosc ? parseFloat(req.body.dlugosc) : null;
 
@@ -60,7 +83,6 @@ app.post('/api/zgloszenie', (req, res) => {
             };
 
             zgloszenia.unshift(noweZgloszenie);
-
             res.json({ sukces: true, wiadomosc: 'Zgłoszenie zapisane.' });
         } catch (error) {
             console.error('Błąd zapisu zgłoszenia:', error);
@@ -69,9 +91,14 @@ app.post('/api/zgloszenie', (req, res) => {
     });
 });
 
-// Zgłoszenia dla panelu admina
+// Pobieranie zgłoszeń w panelu admina
 app.get('/api/admin/zgloszenia', sprawdzHaslo, (req, res) => {
     res.json(zgloszenia);
+});
+
+// NOWY ENDPOINT: Pobieranie historii odwiedzin dla panelu admina
+app.get('/api/admin/odwiedziny', sprawdzHaslo, (req, res) => {
+    res.json(odwiedziny);
 });
 
 // Usuwanie zgłoszeń
@@ -82,7 +109,6 @@ app.delete('/api/admin/zgloszenia/:id', sprawdzHaslo, (req, res) => {
     res.json({ sukces: zgloszenia.length < dlugoscPrzed });
 });
 
-// Działanie na środowisku lokalnym
 if (require.main === module) {
     const PORT = process.env.PORT || 3000;
     app.listen(PORT, () => console.log(`Serwer działa na http://localhost:${PORT}`));
