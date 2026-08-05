@@ -147,7 +147,7 @@
             word-break: break-all;
         }
 
-        textarea {
+        input[type="tel"], textarea {
             width: 100%;
             padding: 0.75rem 1rem;
             border: 1px solid var(--border-color);
@@ -156,13 +156,16 @@
             font-size: 0.9rem;
             color: var(--text-main);
             background: #fff;
-            resize: vertical;
-            min-height: 100px;
             outline: none;
             transition: border-color 0.2s ease, box-shadow 0.2s ease;
         }
 
-        textarea:focus {
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        input[type="tel"]:focus, textarea:focus {
             border-color: var(--border-focus);
             box-shadow: 0 0 0 3px rgba(45, 90, 76, 0.15);
         }
@@ -208,6 +211,7 @@
             padding: 0.75rem;
             border-radius: var(--radius-md);
             display: none;
+            line-height: 1.4;
         }
 
         #status.visible {
@@ -252,7 +256,7 @@
         <div class="header">
             <div class="header-icon">🐾</div>
             <h1>Kocia Straż</h1>
-            <p class="opis-strony">Zrób zdjęcie znalezionemu kotu i przesłij zgłoszenie.</p>
+            <p class="opis-strony">Zrób zdjęcie znalezionemu kotu i prześlij zgłoszenie.</p>
         </div>
 
         <form id="formularz-zgloszenia">
@@ -264,6 +268,11 @@
                     <div class="file-name" id="file-name-display"></div>
                     <input type="file" id="zdjecieKotka" accept="image/*" capture="environment" required>
                 </div>
+            </div>
+
+            <div class="pole">
+                <label for="telefon">Numer telefonu (opcjonalnie)</label>
+                <input type="tel" id="telefon" placeholder="np. 123 456 789">
             </div>
 
             <div class="pole">
@@ -306,6 +315,7 @@
             e.preventDefault();
 
             const opisInput = document.getElementById('opis');
+            const telefonInput = document.getElementById('telefon');
             const plik = zdjecieInput.files[0];
 
             if (!plik) {
@@ -315,32 +325,57 @@
 
             // Stan ładowania przycisku
             btnWyslij.disabled = true;
-            btnText.innerHTML = '<span class="spinner"></span> Przetwarzanie...';
-            ustawStatus('Pobieranie lokalizacji GPS...', 'info');
+            btnText.innerHTML = '<span class="spinner"></span> Pobieranie GPS...';
+            ustawStatus('📍 Pobieranie lokalizacji GPS... Proszę zezwolić na dostęp w telefonie.', 'info');
+
+            // 1. Sprawdzanie dostępności Geolocation API
+            if (!('geolocation' in navigator)) {
+                ustawStatus('❌ Twoja przeglądarka nie obsługuje geolokalizacji.', 'error');
+                btnWyslij.disabled = false;
+                btnText.textContent = 'Wyślij zgłoszenie';
+                return;
+            }
+
+            let szerokosc = null;
+            let dlugosc = null;
+
+            // 2. Próba pobrania GPS z wymuszoną zgodą (działa na iOS / Android)
+            try {
+                const pozycja = await new Promise((resolve, reject) => {
+                    navigator.geolocation.getCurrentPosition(resolve, reject, {
+                        enableHighAccuracy: true,
+                        timeout: 12000,
+                        maximumAge: 0
+                    });
+                });
+
+                szerokosc = pozycja.coords.latitude;
+                dlugosc = pozycja.coords.longitude;
+            } catch (err) {
+                // BLOKADA WYSYŁANIA przy braku zgody lub błędzie GPS
+                if (err.code === err.PERMISSION_DENIED) {
+                    ustawStatus('❌ Brak zgody na GPS! Aby wysłać zgłoszenie, musisz zezwolić na dostęp do lokalizacji w telefonie.', 'error');
+                } else if (err.code === err.TIMEOUT) {
+                    ustawStatus('❌ Przekroczono czas oczekiwania na GPS. Upewnij się, że masz włączoną lokalizację i spróbuj ponownie.', 'error');
+                } else {
+                    ustawStatus('❌ Nie udało się pobrać lokalizacji. Włącz GPS w telefonie i spróbuj ponownie.', 'error');
+                }
+
+                btnWyslij.disabled = false;
+                btnText.textContent = 'Wyślij zgłoszenie';
+                return; // Przerwanie wykonywania — plik nie trafia na serwer
+            }
+
+            // 3. Przygotowanie danych do wysyłki po pomyślnym odebraniu GPS
+            btnText.innerHTML = '<span class="spinner"></span> Wysyłanie...';
+            ustawStatus('🚀 Wysyłanie zgłoszenia na serwer...', 'info');
 
             const formData = new FormData();
             formData.append('opis', opisInput.value);
+            formData.append('telefon', telefonInput.value);
             formData.append('zdjecieKotka', plik);
-
-            // Pobieramy geolokalizację
-            if ('geolocation' in navigator) {
-                try {
-                    const pozycja = await new Promise((resolve, reject) => {
-                        navigator.geolocation.getCurrentPosition(resolve, reject, {
-                            enableHighAccuracy: true,
-                            timeout: 10000,
-                            maximumAge: 0
-                        });
-                    });
-
-                    formData.append('szerokosc', pozycja.coords.latitude);
-                    formData.append('dlugosc', pozycja.coords.longitude);
-                } catch (err) {
-                    console.warn('GPS niedostępny lub odrzucony:', err.message);
-                }
-            }
-
-            ustawStatus('Wysyłanie zgłoszenia...', 'info');
+            formData.append('szerokosc', szerokosc);
+            formData.append('dlugosc', dlugosc);
 
             try {
                 const odp = await fetch('/api/zgloszenie', {
@@ -351,7 +386,7 @@
                 const wynik = await odp.json();
 
                 if (wynik.sukces) {
-                    ustawStatus('✅ Dziękujemy! Zgłoszenie zostało zapisane.', 'success');
+                    ustawStatus('✅ Dziękujemy! Zgłoszenie wraz z lokalizacją GPS zostało zapisane.', 'success');
                     formularz.reset();
                     fileNameDisplay.textContent = '';
                 } else {
