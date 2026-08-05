@@ -32,7 +32,6 @@
             min-height: 100vh;
         }
 
-        /* ---------- EKRAN LOGOWANIA ---------- */
         #ekran-logowania {
             min-height: 100vh;
             display: flex;
@@ -100,7 +99,6 @@
             margin-top: 0.9rem;
         }
 
-        /* ---------- PANEL GŁÓWNY ---------- */
         #panel-glowny { display: none; }
 
         header.pasek {
@@ -248,7 +246,7 @@
             gap: 0.5rem;
         }
 
-        .akcje-karty button {
+        .akcje-karty button, .akcje-karty a {
             flex: 1;
             font-family: var(--sans);
             font-size: 0.8rem;
@@ -257,7 +255,18 @@
             border-radius: 6px;
             cursor: pointer;
             border: none;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
         }
+
+        .btn-pobierz {
+            background: rgba(53, 99, 106, 0.3);
+            color: #72becb;
+            border: 1px solid rgba(53, 99, 106, 0.6) !important;
+        }
+
+        .btn-pobierz:hover { background: rgba(53, 99, 106, 0.5); }
 
         .btn-usun {
             background: rgba(193,98,45,0.15);
@@ -278,7 +287,6 @@
 </head>
 <body>
 
-    <!-- EKRAN LOGOWANIA -->
     <div id="ekran-logowania">
         <div class="panel-logowania">
             <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -295,7 +303,6 @@
         </div>
     </div>
 
-    <!-- PANEL GŁÓWNY -->
     <div id="panel-glowny">
         <header class="pasek">
             <div class="marka">
@@ -315,7 +322,7 @@
 
         <main>
             <div class="pasek-info">
-                <h2>Zgłoszenia i metadane EXIF</h2>
+                <h2>Zgłoszenia i zdjęcia</h2>
                 <div style="display:flex; align-items:center; gap:0.7rem;">
                     <span class="licznik" id="licznik-zgloszen">0 zgłoszeń</span>
                     <button class="odswiez" id="btn-odswiez">↻ Odśwież</button>
@@ -388,7 +395,7 @@
                 const karta = document.createElement('div');
                 karta.className = 'karta-zgloszenia';
 
-                let gpsHtml = '<div class="brak-gps">📍 Brak danych GPS w metadanych zdjęcia</div>';
+                let gpsHtml = '<div class="brak-gps">📍 Brak odczytanych danych GPS</div>';
                 if (z.szerokosc && z.dlugosc) {
                     const mapaUrl = `https://www.google.com/maps?q=${z.szerokosc},${z.dlugosc}`;
                     gpsHtml = `<div><span class="znaczek">📍</span><a href="${mapaUrl}" target="_blank" rel="noopener">${z.szerokosc.toFixed(5)}, ${z.dlugosc.toFixed(5)} — pokaż na mapie</a></div>`;
@@ -413,7 +420,8 @@
                             <div><span class="znaczek">📄</span>Plik: ${z.nazwaPliku || 'brak nazwy'}</div>
                         </div>
                         <div class="akcje-karty">
-                            <button class="btn-usun" data-id="${z.id}">Usuń zgłoszenie</button>
+                            <a href="${z.miniatura || '#'}" download="${z.nazwaPliku || 'zdjecie.jpg'}" class="btn-pobierz">Pobierz plik</a>
+                            <button class="btn-usun" data-id="${z.id}">Usuń</button>
                         </div>
                     </div>
                 `;
@@ -477,7 +485,6 @@
 
         document.getElementById('btn-odswiez').addEventListener('click', odswiezListe);
 
-        // Jeśli hasło jest już zapisane w tej sesji przeglądarki — zaloguj automatycznie
         const zapisaneHaslo = pobierzHaslo();
         if (zapisaneHaslo) {
             zaloguj(zapisaneHaslo);
