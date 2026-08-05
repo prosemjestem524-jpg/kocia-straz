@@ -1,26 +1,22 @@
 const express = require('express');
 const multer = require('multer');
-const exifParser = require('exif-parser');
+const ExifReader = require('exifreader');
 const path = require('path');
 
 const app = express();
 
-// Limit pamięci ustalony na 3.5 MB, aby uniknąć przekroczenia limitów Vercel (4.5 MB zapytania)
+// Konfiguracja Multer (pamięć RAM, limit 10 MB)
 const upload = multer({
     storage: multer.memoryStorage(),
-    limits: { fileSize: 3.5 * 1024 * 1024 } 
+    limits: { fileSize: 10 * 1024 * 1024 } // 10 MB limitu
 });
 
 app.use(express.static(path.join(__dirname, '..', 'public')));
 app.use(express.json());
 
-// Hasło do panelu admina (zmienna środowiskowa lub wartość domyślna)
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'zmien-to-haslo';
-
-// Pamięć podręczna w RAM na zgłoszenia (ulotna na Vercel/Serverless)
 let zgloszenia = [];
 
-// Middleware sprawdzający uprawnienia administratora
 function sprawdzHaslo(req, res, next) {
     const haslo = req.headers['x-admin-haslo'] || req.query.haslo;
     if (haslo !== ADMIN_PASSWORD) {
@@ -30,8 +26,23 @@ function sprawdzHaslo(req, res, next) {
 }
 
 // ---------- Zgłoszenie nowego kota ----------
-app.post('/api/zgloszenie', upload.single('zdjecieKotka'), (req, res) => {
-    try {
+// Używamy funkcji opakowującej Multera, aby wyłapać błąd za dużego pliku
+app.post('/api/zgloszenie', (req, res) => {
+    upload.single('zdjecieKotka')(req, res, async (err) => {
+
+        // 1. Obsługa błędów przesyłania pliku (np. za duży plik)
+        if (err instanceof multer.MulterError) {
+            if (err.code === 'LIMIT_FILE_SIZE') {
+                return res.status(400).json({
+                    sukces: false,
+                    wiadomosc: 'Zdjęcie jest za duże! Maksymalny rozmiar to 10 MB.'
+                });
+            }
+            return res.status(400).json({ sukces: false, wiadomosc: `Błąd przesyłania: ${err.message}` });
+        } else if (err) {
+            return res.status(500).json({ sukces: false, wiadomosc: 'Wystąpił nieoczekiwany błąd podczas wczytywania pliku.' });
+        }
+
         if (!req.file) {
             return res.status(400).json({ sukces: false, wiadomosc: 'Nie przesłano żadnego zdjęcia!' });
         }
@@ -41,78 +52,65 @@ app.post('/api/zgloszenie', upload.single('zdjecieKotka'), (req, res) => {
         let dataZdjecia = null;
         let aparat = null;
 
-        // exif-parser działa stabilnie tylko dla plików JPEG/JPG
-        const czyJpeg = req.file.mimetype === 'image/jpeg' || req.file.mimetype === 'image/jpg';
+        // 2. Bezpieczny odczyt EXIF przy użyciu ExifReader
+        try {
+            const tags = ExifReader.load(req.file.buffer, { expanded: true });
 
-        if (czyJpeg) {
-            try {
-                const parser = exifParser.create(req.file.buffer);
-                const wynikExif = parser.parse();
-
-                if (wynikExif && wynikExif.tags) {
-                    // Weryfikacja współrzędnych GPS
-                    if (typeof wynikExif.tags.GPSLatitude === 'number') {
-                        szerokosc = wynikExif.tags.GPSLatitude;
-                    }
-                    if (typeof wynikExif.tags.GPSLongitude === 'number') {
-                        dlugosc = wynikExif.tags.GPSLongitude;
-                    }
-
-                    // Weryfikacja daty wykonania zdjęcia
-                    if (wynikExif.tags.DateTimeOriginal) {
-                        const timestamp = Number(wynikExif.tags.DateTimeOriginal);
-                        if (!isNaN(timestamp)) {
-                            dataZdjecia = new Date(timestamp * 1000).toLocaleString('pl-PL');
-                        }
-                    }
-
-                    // Model aparatu
-                    if (wynikExif.tags.Model) {
-                        aparat = String(wynikExif.tags.Model);
-                    }
-                }
-            } catch (exifError) {
-                // Przechwycenie błędu odczytu EXIF — pozwala kontynuować zapis zgłoszenia
-                console.warn('Nie udało się odczytać danych EXIF:', exifError.message);
+            // Współrzędne GPS
+            if (tags.gps && tags.gps.Latitude && tags.gps.Longitude) {
+                szerokosc = tags.gps.Latitude;
+                dlugosc = tags.gps.Longitude;
             }
+
+            // Data wykonania zdjęcia
+            if (tags.exif && tags.exif.DateTimeOriginal) {
+                dataZdjecia = tags.exif.DateTimeOriginal.description;
+            }
+
+            // Model aparatu
+            if (tags.exif && tags.exif.Model) {
+                aparat = tags.exif.Model.description;
+            }
+        } catch (exifErr) {
+            // Jeśli plik nie ma EXIF lub nie jest wspierany, kod przechodzi dalej bez błędu
+            console.log('Brak danych EXIF lub nie udało się ich odczytać:', exifErr.message);
         }
 
-        // Generowanie ciągu Base64 do podglądu zdjęcia w panelu admina
-        const miniatura = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+        try {
+            const miniatura = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
 
-        const noweZgloszenie = {
-            id: Date.now(),
-            opis: req.body.opis || 'Kot w potrzebie',
-            szerokosc,
-            dlugosc,
-            dataZdjecia,
-            aparat,
-            data: new Date().toLocaleString('pl-PL'),
-            nazwaPliku: req.file.originalname,
-            miniatura
-        };
+            const noweZgloszenie = {
+                id: Date.now(),
+                opis: req.body.opis || 'Kot w potrzebie',
+                szerokosc,
+                dlugosc,
+                dataZdjecia,
+                aparat,
+                data: new Date().toLocaleString('pl-PL'),
+                nazwaPliku: req.file.originalname,
+                miniatura
+            };
 
-        zgloszenia.unshift(noweZgloszenie);
+            zgloszenia.unshift(noweZgloszenie);
 
-        // Zwrot odpowiedzi bez pełnego base64 w obiekcie danych dla oszczędności transferu
-        res.json({
-            sukces: true,
-            wiadomosc: 'Dziękujemy! Zgłoszenie zostało zapisane, a dane zlokalizowane w systemie.',
-            dane: {
-                id: noweZgloszenie.id,
-                opis: noweZgloszenie.opis,
-                szerokosc: noweZgloszenie.szerokosc,
-                dlugosc: noweZgloszenie.dlugosc,
-                dataZdjecia: noweZgloszenie.dataZdjecia
-            }
-        });
-    } catch (error) {
-        console.error('Błąd serwera podczas przetwarzania:', error);
-        res.status(500).json({ sukces: false, wiadomosc: 'Wystąpił błąd serwera podczas przetwarzania zdjęcia.' });
-    }
+            res.json({
+                sukces: true,
+                wiadomosc: 'Dziękujemy! Zgłoszenie zostało zapisane.',
+                dane: {
+                    id: noweZgloszenie.id,
+                    opis: noweZgloszenie.opis,
+                    szerokosc: noweZgloszenie.szerokosc,
+                    dlugosc: noweZgloszenie.dlugosc
+                }
+            });
+        } catch (error) {
+            console.error('Błąd podczas tworzenia zgłoszenia:', error);
+            res.status(500).json({ sukces: false, wiadomosc: 'Błąd serwera podczas zapisywania danych.' });
+        }
+    });
 });
 
-// ---------- Publiczna lista zgłoszeń (anonimizowana) ----------
+// ---------- Publiczna lista zgłoszeń ----------
 app.get('/api/zgloszenia', (req, res) => {
     const publiczne = zgloszenia.map(z => ({
         id: z.id,
@@ -124,12 +122,11 @@ app.get('/api/zgloszenia', (req, res) => {
     res.json(publiczne);
 });
 
-// ---------- Panel admina: pobieranie wszystkich zgłoszeń z miniaturami ----------
+// ---------- Panel admina ----------
 app.get('/api/admin/zgloszenia', sprawdzHaslo, (req, res) => {
     res.json(zgloszenia);
 });
 
-// ---------- Panel admina: usuwanie zgłoszenia ----------
 app.delete('/api/admin/zgloszenia/:id', sprawdzHaslo, (req, res) => {
     const id = Number(req.params.id);
     const dlugoscPrzed = zgloszenia.length;
